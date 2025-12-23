@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>信息课问卷调查</title>
+    <script>
+        const messagest = "一定要说真话哦<br/>......<br/>信息课超重要的^_^";
+        document.addEventListener("DOMContentLoaded", function () {
+            const messages = messagest.split('<br/>')
+            let index = 0;
+            const answerInput = document.getElementById('answer');
+
+            function showPopup() {
+                if (index < messages.length) {
+                    let popup = document.createElement("div");
+                    popup.className = "popup";
+                    popup.textContent = messages[index];
+                    let button = document.createElement("button");
+                    button.textContent = "关闭";
+                    button.onclick = function () {
+                        document.body.removeChild(popup);
+                        if (index === messages.length - 1) {
+                            answerInput.classList.add('animate');
+                        } else {
+                            index++;
+                            showPopup();
+                        }
+                    };
+                    popup.appendChild(document.createElement("br"));
+                    popup.appendChild(button);
+                    document.body.appendChild(popup);
+                }
+            }
+
+            showPopup();
+        });
+    </script>
+    <style>
+        .youscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffcad382;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        /* 雨姐洗礼弹窗样式 */
+        .yujie-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            display: none;
+            padding: 20px;
+            overflow-y: auto;
+            background-image: url("https://studydoinge.github.io/YUJIE-DAHANJIAO.png");
+            background-repeat: repeat;
+            background-size: 150px 150px;
+            background-opacity: 0.1;
+        }
+
+        .yujie-image {
+            max-width: 80%;
+            max-height: 60vh;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .yujie-text {
+            font-size: 5vw;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+        }
+
+        .youtext {
+            font-size: 7vw;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        /* 输入框美化 */
+        #question {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        #answer {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #333;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+            box-sizing: border-box;
+            transform: scale(0.8);
+            opacity: 0;
+        }
+
+        /* 定义动画 */
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #answer.animate {
+            animation: scaleIn 0.5s ease-out forwards;
+        }
+
+        #answer:focus {
+            outline: none;
+            border-color: #e0d5ff;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        #answer::placeholder {
+            color: #999;
+        }
+
+        /* 按钮美化 */
+        #nextBtn {
+            background-color: #c9b7fb;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        #nextBtn:hover {
+            background-color: #c9b7fb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        #nextBtn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* 弹窗样式 */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 2px solid #ead9ff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 1000;
+            max-width: 90%;
+        }
+
+        .popup button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background-color: #c9b7fb;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .popup button:hover {
+            background-color: #c9b7fb;
+        }
+
+        /* 特效页面 */
+        .yes-text {
+            font-size: 7vw;
+            color: #6c5ce7;
+            margin-bottom: 30px;
+        }
+
+        .yes-image {
+            max-width: 80%;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 血色警告横幅样式 */
+        .blood-banner {
+            position: fixed;
+            left: 0;
+            right: 0;
+            padding: 15px 0;
+            background-color: #dc143c;
+            color: white;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 9999;
+            opacity: 0;
+            animation: fadeInOut 3s ease-in-out forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            20% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            80% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        /* 雨姐终极洗礼样式 - 图片铺满+震动 */
+        .deep-apocalypse-mode {
+            background-color: #220b0e !important;
+            background-image: url("https://studydoinge.github.io/YUJIE-DAHANJIAO.png");
+            background-repeat: repeat;
+            background-attachment: fixed;
+            background-opacity: 0.2;
+            background-size: 200px 200px;
+        }
+
+        .apocalypse-shake {
+            animation: shake 3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            10% { transform: translateX(-5px); }
+            20% { transform: translateX(5px); }
+            30% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            50% { transform: translateX(-5px); }
+            60% { transform: translateX(5px); }
+            70% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+            90% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .blood-text {
+            position: fixed;
+            color: #dc143c;
+            font-weight: bold;
+            z-index: 9998;
+            transition: opacity 2s ease;
+        }
+
+        .blood-box {
+            position: fixed;
+            background-color: rgba(220, 20, 60, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 9997;
+            transition: opacity 0.5s ease;
+        }
+
+        /* 雨姐浮动图片 - 洗礼效果拉满 */
+        .yujie-float-img {
+            position: fixed;
+            width: 100px;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+            z-index: 9996;
+            transition: opacity 2s ease;
+            animation: float 4s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 仅保留专属雨姐音频 -->
+    <audio id="yujie-music" src="https://studydoinge.github.io/yujie-audio.mp3" loop preload="auto"></audio>
+    
+   <div class="container">
+        <div id="question"></div>
+        <div class="input-container">
+            <input type="text" id="answer" autocomplete="off" placeholder="请输入你的答案...">
+        </div>
+        <button onclick="nextQuestion()" id="nextBtn">下一个</button>
+    </div>
+    
+    <!-- 成功弹窗 -->
+    <div class="youscreen" id="success-screen">
+        <h1 class="yes-text">太好了！信息课马上归还~♡︎ᐝ</h1>
+        <img src="https://dy.dw0.cn/uploads/20250222/2e3ef643fa797be6e5062615d75d5c6d.gif" alt="Success" class="yes-image">
+    </div>
+
+    <!-- 雨姐洗礼弹窗 -->
+    <div class="yujie-screen" id="yujie-screen">
+        <h1 class="yujie-text">接受雨姐洗礼吧！</h1>
+        <img src="https://studydoinge.github.io/YUJIE-DAHANJIAO.png" alt="东北雨姐" class="yujie-image">
+        <button class="btn" id="close-yujie" style="padding: 10px 20px; border-radius: 8px; border: none; background: #c9b7fb; color: white; cursor: pointer;">关闭</button>
+    </div>
+
+    <script>
+        // 无需修改任何配置，直接使用
+        const questionst = "你每周上几节信息课？<br/>你最喜欢信息课的哪个内容？<br/>你觉得信息课重要吗？<br/>你希望增加信息课课时吗？<br/>占用信息课的课程是什么？<br/>到底什么时候还信息课？";
+        const answerst = "马上还<br/>很快还<br/>这周还<br/>下周还<br/>立刻还";
+        const textst = "凭什么占用信息课！<br/>信息课是我们的必修课！<br/>把信息课还回来！<br/>我们需要上信息课！<br/>占用信息课是不对的！<br/>快把信息课还给我们！<br/>信息课很重要！<br/>不要占用我们的信息课！";
+        const textstw = "接受雨姐洗礼吧<br/>雨姐带不带派<br/>不还信息课雨姐要用45码大汗脚熏你<br/>接受雨姐洗礼吧<br/>雨姐带不带派<br/>不还信息课雨姐要用45码大汗脚熏你<br/>接受雨姐洗礼吧<br/>雨姐带不带派";
+        const opportunity = "再给你一次机会（这次要选归还哦）";
+
+        // 固定元素绑定，无需调整
+        const yujieMusic = document.getElementById('yujie-music');
+        const yujieScreen = document.getElementById('yujie-screen');
+        const closeYujieBtn = document.getElementById('close-yujie');
+        const questions = questionst.split('<br/>');
+        let currentStep = 0;
+        let isApocalypse = false;
+        let retryCount = 0;
+        const container = document.querySelector('.container');
+        const successScreen = document.getElementById('success-screen');
+        const yujieImgUrl = "https://studydoinge.github.io/YUJIE-DAHANJIAO.png";
+
+        // 初始化第一个问题
+        updateQuestion();
+
+        // 关闭雨姐弹窗
+        closeYujieBtn.addEventListener('click', function() {
+            yujieScreen.style.display = 'none';
+            yujieMusic.pause();
+            yujieMusic.currentTime = 0;
+        });
+
+        // 下一题函数
+        function nextQuestion() {
+            if (currentStep === questions.length - 1) {
+                checkFinalAnswer();
+                return;
+            }
+            currentStep++;
+            updateQuestion();
+        }
+
+        // 更新当前问题
+        function updateQuestion() {
+            document.getElementById('question').textContent = questions[currentStep];
+            document.getElementById('answer').value = '';
+            document.getElementById('answer').focus();
+        }
+
+        // 验证答案：第二次答错直接触发雨姐洗礼（无需配置）
+        function checkFinalAnswer() {
+            const userAnswer = document.getElementById('answer').value.trim().toLowerCase();
+            const validAnswers = answerst.split('<br/>').map(item => item.toLowerCase());
+            const isValidAnswer = validAnswers.some(ans => userAnswer.includes(ans));
+
+            // 第一次答错：给机会（原版警告）
+            if (retryCount === 0 && !isValidAnswer) {
+                triggerBloodEffect();
+            } 
+            // 答案正确：成功弹窗
+            else if (isValidAnswer) {
+                playSuccessEffect();
+            } 
+            // 第二次答错：直接触发雨姐终极洗礼（核心需求）
+            else {
+                triggerDeeperApocalypse();
+            }
+        }
+
+        // 第一次警告效果（不变，给重来机会）
+        function triggerBloodEffect() {
+            isApocalypse = true;
+            container.style.opacity = '0.5';
+            container.style.pointerEvents = 'none';
+
+            const bloodTexts = textst.split('<br/>');
+            const createBanner = () => {
+                if (!isApocalypse) return;
+                const banner = document.createElement('div');
+                banner.className = 'blood-banner';
+                banner.style.top = `${Math.floor(Math.random() * 80) + 10}px`;
+                banner.textContent = bloodTexts[Math.floor(Math.random() * bloodTexts.length)];
+                document.body.appendChild(banner);
+                setTimeout(() => banner.parentNode?.removeChild(banner), 3000);
+            };
+
+            window.bannerInterval = setInterval(createBanner, 500);
+            createBanner();
+
+            setTimeout(() => {
+                clearInterval(window.bannerInterval);
+                isApocalypse = false;
+                const retryPopup = document.createElement('div');
+                retryPopup.className = 'popup';
+                retryPopup.textContent = opportunity;
+                const retryBtn = document.createElement('button');
+                retryBtn.textContent = '确认';
+                retryBtn.onclick = function () {
+                    document.body.removeChild(retryPopup);
+                    container.style.opacity = '1';
+                    container.style.pointerEvents = 'auto';
+                    document.getElementById('answer').value = '';
+                    document.getElementById('answer').focus();
+                    retryCount++; // 标记为已使用一次机会
+                };
+                retryPopup.appendChild(document.createElement("br"));
+                retryPopup.appendChild(retryBtn);
+                document.body.appendChild(retryPopup);
+            }, 3000);
+        }
+
+        // 第二次直接触发：雨姐终极洗礼效果（无需配置，自动触发）
+        function triggerDeeperApocalypse() {
+            // 自动播放雨姐音频
+            yujieMusic.play().catch(err => console.log('雨姐洗礼音频播放:', err));
+            isApocalypse = true;
+            // 添加洗礼样式（背景图片+震动）
+            document.body.classList.add('deep-apocalypse-mode', 'apocalypse-shake');
+            container.remove(); // 移除问卷容器
+
+            // 3秒后停止震动，保留洗礼背景
+            setTimeout(() => document.body.classList.remove('apocalypse-shake'), 3000);
+
+            const texts = textstw.split('<br/>');
+            // 高频生成洗礼元素（文本+盒子+浮动图片）
+            const createEntity = () => {
+                if (!isApocalypse) return;
+
+                // 雨姐洗礼文本
+                const text = document.createElement('div');
+                text.className = 'blood-text';
+                Object.assign(text.style, {
+                    left: `${Math.random() * 95}%`,
+                    top: `${Math.random() * 95}%`,
+                    fontSize: `${Math.random() * 16 + 18}px`,
+                    animationDelay: `${Math.random() * 2}s`
+                });
+                text.textContent = texts[Math.floor(Math.random() * texts.length)];
+                document.body.appendChild(text);
+
+                // 雨姐洗礼盒子
+                const box = document.createElement('div');
+                box.className = 'blood-box';
+                Object.assign(box.style, {
+                    left: `${Math.random() * 90}%`,
+                    top: `${Math.random() * 90}%`,
+                    width: `${Math.random() * 250 + 150}px`,
+                    transform: `rotate(${Math.random() * 30 - 15}deg)`
+                });
+                box.textContent = texts[Math.floor(Math.random() * texts.length)];
+                document.body.appendChild(box);
+
+                // 雨姐浮动图片（随机生成，漂浮动画）
+                const floatImg = document.createElement('img');
+                floatImg.className = 'yujie-float-img';
+                floatImg.src = yujieImgUrl;
+                Object.assign(floatImg.style, {
+                    left: `${Math.random() * 90}%`,
+                    top: `${Math.random() * 90}%`,
+                    width: `${Math.random() * 80 + 50}px`,
+                    animationDelay: `${Math.random() * 3}s`
+                });
+                document.body.appendChild(floatImg);
+
+                // 自动移除元素，循环刷屏
+                setTimeout(() => {
+                    text.style.opacity = '0';
+                    setTimeout(() => text.parentNode?.removeChild(text), 2000);
+                }, 8000);
+                setTimeout(() => box.parentNode?.removeChild(box), 2000);
+                setTimeout(() => {
+                    floatImg.style.opacity = '0';
+                    setTimeout(() => floatImg.parentNode?.removeChild(floatImg), 2000);
+                }, 8000);
+            };
+
+            // 150ms生成一次，拉满洗礼折磨感
+            window.entityInterval = setInterval(createEntity, 150);
+        }
+
+        // 成功效果（不变）
+        function playSuccessEffect() {
+            container.style.opacity = '0';
+            container.style.pointerEvents = 'none';
+            successScreen.style.display = 'flex';
+            setTimeout(() => location.reload(), 5000);
+        }
+    </script>
+</body>
+</html>
