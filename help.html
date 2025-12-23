@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDE 学习资源|预览版 - 帮助 </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .help-card {
+                @apply bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源|预览版</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 页面标题 -->
+    <section class="bg-blue-50 py-8">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">帮助中心|预览版</h2>
+            <p class="text-gray-600 mt-2">了解如何使用SDE学习资源平台的各项功能</p>
+        </div>
+    </section>
+
+    <!-- 帮助内容 -->
+    <section class="container mx-auto px-4 py-12">
+        <div class="max-w-3xl mx-auto">
+            <!-- 平台用途说明 -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2"><i class="fa fa-info-circle text-blue-500"></i> 平台用途</h3>
+                <div class="help-card">
+                    <p class="text-gray-700 mb-4">SDE学习资源平台是一个专为学生打造的软件开发学习平台，主要用途包括：</p>
+                    <ul class="list-disc pl-6 space-y-2 text-gray-700 mb-4">
+                        <li>提供从编程基础到高级开发的系列学习文章</li>
+                        <li>分享适合学生的视频教程、文档资料和开发工具</li>
+                        <li>帮助学生建立完整的软件开发知识体系</li>
+                        <li>提供实战案例和代码示例，辅助理论学习</li>
+                        <li>为求职面试提供算法、编程等相关知识准备</li>
+                    </ul>
+                    <p class="text-gray-700">无论你是编程零基础的新手，还是有一定基础想进一步提升的学生，都能在这里找到适合自己的学习内容。</p>
+                </div>
+            </div>
+
+            <!-- 功能说明 -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2"><i class="fa fa-cogs text-purple-500"></i> 功能说明</h3>
+                
+                <div class="space-y-6">
+                    <!-- 文章阅读功能 -->
+                    <div class="help-card">
+                        <h4 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                            <i class="fa fa-file-text-o text-blue-500"></i> 文章阅读
+                        </h4>
+                        <p class="text-gray-700 mb-3">平台提供各类软件开发相关文章，涵盖编程基础、算法、Web开发、数据库等多个领域。</p>
+                        <ul class="list-disc pl-6 space-y-1 text-gray-600">
+                            <li>点击导航栏"文章"进入文章列表页</li>
+                            <li>可按分类筛选感兴趣的文章内容</li>
+                            <li>点击文章标题或"阅读全文"按钮查看完整内容</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 音频朗读功能 -->
+                    <div class="help-card">
+                        <h4 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                            <i class="fa fa-volume-up text-green-500"></i> 音频朗读
+                        </h4>
+                        <p class="text-gray-700 mb-3">为方便学习，所有文章都提供音频朗读功能，支持边听边学。</p>
+                        <ul class="list-disc pl-6 space-y-1 text-gray-600">
+                            <li>在文章详情页顶部找到音频播放控件</li>
+                            <li>点击播放按钮开始听取文章内容</li>
+                            <li>再次点击按钮可暂停播放</li>
+                            <li>音频文件存储在本地路径：/resource/AUDIO/</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- PDF导出功能 -->
+                    <div class="help-card">
+                        <h4 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                            <i class="fa fa-file-pdf-o text-red-500"></i> PDF导出
+                        </h4>
+                        <p class="text-gray-700 mb-3">支持将文章导出为PDF格式，方便离线阅读和学习。</p>
+                        <ul class="list-disc pl-6 space-y-1 text-gray-600">
+                            <li>在文章列表页，每篇文章右侧有"导出PDF"按钮</li>
+                            <li>在文章详情页顶部也有"导出本文为PDF"按钮</li>
+                            <li>点击按钮后，系统会自动生成PDF文件并下载</li>
+                            <li>导出的PDF包含文章完整内容和格式</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 资源下载功能 -->
+                    <div class="help-card">
+                        <h4 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                            <i class="fa fa-download text-yellow-500"></i> 资源下载
+                        </h4>
+                        <p class="text-gray-700 mb-3">平台提供各类学习资源，包括视频教程、文档资料和开发工具。</p>
+                        <ul class="list-disc pl-6 space-y-1 text-gray-600">
+                            <li>点击导航栏"资源"进入资源列表页</li>
+                            <li>资源分为视频教程、文档资料和开发工具三类</li>
+                            <li>点击对应资源的"下载"或"获取"按钮即可获取资源</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 常见问题 -->
+            <div>
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2"><i class="fa fa-question-circle text-orange-500"></i> 常见问题</h3>
+                <div class="help-card">
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-lg">Q: 平台的内容是否需要付费？</h4>
+                            <p class="text-gray-600">A: 不需要，平台所有文章和资源均免费提供给学生使用。</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Q: 如何获取音频文件？</h4>
+                            <p class="text-gray-600">A: 音频文件默认存储在本地路径/resource/AUDIO/下，如需单独获取可联系我们。</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Q: 导出的PDF文件在哪里可以找到？</h4>
+                            <p class="text-gray-600">A: 导出的PDF文件会保存在浏览器默认的下载路径中，通常是"下载"文件夹。</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Q: 如何反馈问题或建议？</h4>
+                            <p class="text-gray-600">A: 可以通过页脚的电子邮件联系我们，或在B站、抖音官方账号留言。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <a href="about.html#contact" class="custom-btn">联系我们 <i class="fa fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa fa-code text-blue-400"></i> SDE 学习资源|预览版</h4>
+                    <p class="text-gray-400">为学生提供高质量的软件开发学习内容，助力技术成长</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">快速链接</h5>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="articles.html" class="text-gray-400 hover:text-white transition-colors">文章</a></li>
+                        <li><a href="resources.html" class="text-gray-400 hover:text-white transition-colors">资源</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition-colors">关于</a></li>
+                        <li><a href="help.html" class="text-gray-400 hover:text-white transition-colors">帮助</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">关注我们</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-600 transition-colors" title="B站">
+                            <i class="fa fa-play-circle"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-red-600 transition-colors" title="抖音">
+                            <i class="fa fa-music"></i>
+                        </a>
+                        <a href="mailto:contact@sde-study.com" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-green-600 transition-colors" title="电子邮件">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                    </div>
+                    <p class="mt-4 text-gray-400">联系我们: contact@sde-study.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                &copy; 2024 SDE 学习资源 | 预览版不代表最终品质
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            header.classList.toggle('py-2', window.scrollY > 10);
+            header.classList.toggle('py-4', window.scrollY <= 10);
+        });
+    </script>
+</body>
+</html>
+    

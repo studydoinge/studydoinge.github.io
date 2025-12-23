@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LONGIN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义样式 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                        neutral: '#64748B'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .btn-hover {
+                @apply transform transition-all duration-300 ease-in-out;
+            }
+            .card-shadow {
+                @apply shadow-lg hover:shadow-xl transition-shadow duration-300;
+            }
+            .pulse-animation {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.02); }
+                100% { transform: scale(1); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4 font-inter">
+    <!-- 主卡片容器 -->
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full card-shadow pulse-animation">
+        <!-- 主题图标 -->
+        <div class="flex justify-center mb-6">
+            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <i class="fa fa-graduation-cap text-primary text-2xl"></i>
+            </div>
+        </div>
+        
+        <!-- 提示信息 -->
+        <h3 class="text-[clamp(1.5rem,3vw,1.8rem)] font-bold text-gray-800 text-center mb-4">页面使用提示</h3>
+        <p class="text-neutral text-center mb-6 text-lg">这个页面适合学生使用</p>
+        
+        <!-- 身份询问 -->
+        <p class="text-gray-700 text-center mb-8">你是学生吗？</p>
+        
+        <!-- 功能按钮组 -->
+        <div class="flex gap-4">
+            <!-- 选择“是”：跳转至SDE.ITML -->
+            <button onclick="handleStudentConfirm(true)" 
+                class="flex-1 bg-success hover:bg-success/90 text-white font-medium py-3 px-6 rounded-xl btn-hover hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 focus:ring-2 focus:ring-success/50 focus:outline-none">
+                <i class="fa fa-check"></i>
+                <span>是，我是学生</span>
+            </button>
+            
+            <!-- 选择“不是”：关闭当前页面 -->
+            <button onclick="handleStudentConfirm(false)" 
+                class="flex-1 bg-danger hover:bg-danger/90 text-white font-medium py-3 px-6 rounded-xl btn-hover hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 focus:ring-2 focus:ring-danger/50 focus:outline-none">
+                <i class="fa fa-times"></i>
+                <span>不是</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 身份确认核心逻辑
+        function handleStudentConfirm(isStudent) {
+            if (isStudent) {
+                // 跳转到目标页面SDE.ITML
+                window.location.href = "INDEX.HTML";
+            } else {
+                // 非学生逻辑：关闭页面
+                if (window.close) {
+                    window.close();
+                } else {
+                    alert("请手动关闭当前页面");
+                }
+            }
+        }
+
+        // 添加键盘支持（Enter键确认，Escape键关闭）
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                handleStudentConfirm(true);
+            } else if (e.key === 'Escape') {
+                handleStudentConfirm(false);
+            }
+        });
+    </script>
+</body>
+</html>
+    

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信息课赛博安息堂</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0a0a1a; 
+            background-image: radial-gradient(circle at 50% 50%, #1a1a3a 0%, #0a0a1a 100%);
+            color: #e0e0ff; 
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .neon-text { text-shadow: 0 0 5px #66f, 0 0 10px #66f, 0 0 20px #66f; }
+        .toilet-tag {
+            background: #ff6666;
+            color: #0a0a1a;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            box-shadow: 0 0 10px #ff666680;
+            animation: flash 2s ease-in-out infinite;
+        }
+        /* 禁止拉屎警示 */
+        .no-poop {
+            font-size: 1.8rem;
+            color: #ff3333;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 0 0 10px #ff333390;
+            animation: shake 3s infinite;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @keyframes flash {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.8; }
+        }
+        /* 纯CSS本地花圈（仅跳转B站，无其他跳转） */
+        .wreath {
+            width: 260px;
+            height: 260px;
+            position: relative;
+            margin-bottom: -25px;
+            animation: rotate 18s linear infinite;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .wreath:hover { transform: scale(1.05); }
+        .wreath-ring {
+            width: 100%;
+            height: 100%;
+            border: 22px solid #2d862d;
+            border-radius: 50%;
+            box-shadow: 0 0 18px #33cc3390, inset 0 0 12px #33cc3370;
+            position: relative;
+            z-index: 1;
+        }
+        .wreath-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 160px;
+            border: 14px solid #2d862d;
+            border-radius: 50%;
+            box-shadow: inset 0 0 10px #33cc3370;
+            z-index: 2;
+        }
+        .wreath-decoration {
+            position: absolute;
+            z-index: 3;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        .decor-flower {
+            background: radial-gradient(circle, #ff99cc 0%, #ff6699 75%);
+            box-shadow: 0 0 8px #ff669980;
+        }
+        .decor-flower::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: #ff3366;
+            border-radius: 50%;
+        }
+        .decor-leaf {
+            background: #33cc33;
+            border-radius: 50% 0 50% 0;
+            transform: rotate(45deg);
+            box-shadow: 0 0 6px #33cc3380;
+        }
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* 墓碑（仅此处跳转Rickroll） */
+        .tombstone {
+            width: 90%;
+            max-width: 600px;
+            background: #111;
+            border: 3px solid #66f;
+            border-radius: 10px;
+            padding: 50px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px #66f5, inset 0 0 15px #66f3;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            position: relative;
+            z-index: 10;
+        }
+        .tombstone:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px #66f, inset 0 0 20px #66f5;
+            border-color: #aaf;
+        }
+        .tombstone h1 { font-size: 2.8rem; margin-bottom: 25px; color: #aaf; }
+        .tombstone p { font-size: 1.3rem; line-height: 2; margin: 12px 0; }
+        .death-date { color: #ff6666; text-shadow: 0 0 8px #ff666690; }
+        .tombstone .hint {
+            font-size: 1rem;
+            color: #6688ff;
+            margin-top: 30px;
+            text-shadow: 0 0 5px #6688ff50;
+        }
+        /* 献花按钮（仅加花，无跳转） */
+        .flower-btn {
+            background: #222;
+            color: #aaf;
+            border: 2px solid #66f;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        .flower-btn:hover {
+            background: #66f;
+            color: #0a0a1a;
+            box-shadow: 0 0 10px #66f, 0 0 20px #66f5;
+            transform: translateY(-2px);
+        }
+        /* 花束容器 */
+        .flower-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+        .flower {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ff99cc 0%, #ff6699 70%);
+            border-radius: 50%;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+            opacity: 0.8;
+        }
+        .flower::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 27px;
+            width: 6px;
+            height: 20px;
+            background: #33cc33;
+            border-radius: 3px;
+        }
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+        /* 音频控制（仅控制音乐，无跳转） */
+        .audio-control {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .audio-control button {
+            background: #222;
+            color: #aaf;
+            border: 1px solid #66f;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        /* 隐藏按钮（仅拽走狗屎，无跳转） */
+        .hidden-btn {
+            display: none; /* 右键检查改这里为display:block */
+            background: #442222;
+            color: #ffcccc;
+            border: 2px solid #993333;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-size: 1rem;
+            cursor: grab;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        .hidden-btn:active { cursor: grabbing; }
+        .hidden-btn:hover {
+            background: #993333;
+            box-shadow: 0 0 10px #ff333380;
+        }
+        /* 狗屎元素 */
+        .poop {
+            width: 50px;
+            height: 60px;
+            background: radial-gradient(circle, #8b4513 0%, #5a3010 70%);
+            border-radius: 60% 60% 40% 40%;
+            position: relative;
+            margin: 10px auto;
+            box-shadow: 0 0 8px #5a301080;
+            animation: wiggle 2s infinite;
+        }
+        .poop::before, .poop::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background: #8b4513;
+            border-radius: 50%;
+        }
+        .poop::before { top: -15px; left: 5px; }
+        .poop::after { top: -10px; right: 5px; }
+        @keyframes wiggle {
+            0%,100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            font-size: 0.9rem;
+            color: #6688ff80;
+        }
+    </style>
+</head>
+<body>
+    <div class="toilet-tag">🏠 信息茅房专属</div>
+    <div class="no-poop">🚫 禁止拉屎！🚫</div>
+
+    <!-- 赛博花圈（仅跳转B站指定视频） -->
+    <div class="wreath" onclick="window.open('https://bilibili.com/video/BV1GJ411x7h7', '_blank')">
+        <div class="wreath-ring"></div>
+        <div class="wreath-inner"></div>
+        <div class="wreath-decoration decor-flower" style="top: 8%; left: 50%; transform: translate(-50%, -50%);"></div>
+        <div class="wreath-decoration decor-leaf" style="top: 25%; left: 78%;"></div>
+        <div class="wreath-decoration decor-flower" style="top: 50%; left: 90%; transform: translate(-50%, -50%);"></div>
+        <div class="wreath-decoration decor-leaf" style="top: 75%; left: 78%;"></div>
+        <div class="wreath-decoration decor-flower" style="top: 92%; left: 50%; transform: translate(-50%, -50%);"></div>
+        <div class="wreath-decoration decor-leaf" style="top: 75%; left: 22%;"></div>
+        <div class="wreath-decoration decor-flower" style="top: 50%; left: 10%; transform: translate(-50%, -50%);"></div>
+        <div class="wreath-decoration decor-leaf" style="top: 25%; left: 22%;"></div>
+        <div class="wreath-decoration decor-flower" style="top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+    </div>
+
+    <!-- 赛博墓碑（仅此处跳转Rickroll，唯一跳转点） -->
+    <div class="tombstone" onclick="window.open('https://www.bilibili.com/video/BV1GJ411x7h7, '_blank')">
+        <h1 class="neon-text">信息课之墓</h1>
+        <p>生于每周期待，卒于未知调课</p>
+        <p>失联时长：<span class="death-date">已超30个日夜</span></p>
+        <p>疑似死因：主科老师残忍占课</p>
+        <p>遗言：本想教你敲代码，奈何课时被蒸发</p>
+        <DEL>还没死就弄遗言不吉利吧</DEL>
+
+        
+        
+        <!-- 献花按钮（仅添加花束，无跳转） -->
+        <button class="flower-btn" onclick="addFlower()">献上电子花束</button>
+    </div>
+
+    <!-- 隐藏按钮+狗屎（仅隐藏/显示狗屎，无跳转） -->
+    <button class="hidden-btn" id="poopBtn" onclick="pullPoop()">💩 拽走这坨狗屎 💩</button>
+    <div class="poop" id="poop"></div>
+
+    <div class="flower-container" id="flowerContainer"></div>
+
+    <!-- 音频元素 -->
+    <audio id="mournMusic" loop preload="auto">
+        <source src="\resource\ADIUO\AIYUE.mp3" type="audio/mpeg">
+        您的浏览器不支持音频播放
+    
+    <audio id="flowerSound" preload="auto">
+        <source src="\resource\ADIUO\AIYUE.mp3" type="audio/mpeg">
+    
+    <audio id="poopSound" preload="auto">
+        <source src="\resource\ADIUO\AIYUE.mp3" type="audio/mpeg">
+    
+
+    <div class="footer">© 2024 信息茅房哀悼者 | 愿信息课早日重启</div>
+
+    <script>
+        // 音量控制
+        function setVolume() {
+            const music = document.getElementById('mournMusic');
+            music.volume = document.getElementById('volume').value;
+        }
+
+        // 页面加载自动播放哀乐
+        window.onload = function() {
+            document.getElementById('mournMusic

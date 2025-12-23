@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDE 学习资源 - 文章（T1）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- PDF导出功能 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .pdf-btn {
+                @apply inline-flex items-center bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded-lg transition-all duration-300 hover:bg-red-200;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源测试版</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 页面标题 -->
+    <section class="bg-blue-50 py-8">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">本站未开发完成</h2>
+            <p class="text-gray-600 mt-2">请稍安勿躁</p>
+        </div>
+    </section>
+
+    <!-- 文章分类 -->
+   
+                    <p class="mt-4 text-gray-400">联系我们: contact@sde-study.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                &copy; 2024 SDE 学习资源 | 学生专属学习平台 测试版不代表最终品质 TEST01
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            header.classList.toggle('py-2', window.scrollY > 10);
+            header.classList.toggle('py-4', window.scrollY <= 10);
+        });
+
+        // PDF导出功能
+        function exportToPDF(articleId) {
+            // 显示加载状态
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 正在导出...';
+            btn.disabled = true;
+
+            // 模拟文章内容获取（实际使用时应从对应文章页面获取）
+            const articleTitles = {
+                'python-basics-content': 'Python 编程入门：从零到一的学习路径',
+                'algorithms-content': '数据结构与算法：面试必备知识点',
+                'web-dev-content': '现代前端开发：从HTML到React',
+                'database-content': 'SQL基础到进阶：数据库查询技巧'
+            };
+
+            setTimeout(() => {
+                // 创建PDF文档
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                // 设置字体
+                doc.setFontSize(16);
+                doc.text(articleTitles[articleId], 20, 20);
+                
+                doc.setFontSize(12);
+                doc.text('本文是SDE学习资源平台的原创内容，详细介绍了相关技术知识点，适合学生学习参考。', 20, 35);
+                doc.text('完整内容请访问我们的网站：https://sde-study.com', 20, 45);
+                
+                // 保存PDF
+                doc.save(`${articleTitles[articleId]}.pdf`);
+                
+                // 恢复按钮状态
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
+    
