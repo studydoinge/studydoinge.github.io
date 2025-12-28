@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大厂面试题自测 - SDE 学习资源</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .submit-btn {
+                @apply inline-flex items-center bg-blue-500 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 hover:bg-blue-600 hover:scale-105 shadow-md text-lg;
+            }
+            .question-card {
+                @apply bg-white p-6 rounded-xl shadow-md mb-6 border-l-4 border-blue-500;
+            }
+            .option-item {
+                @apply flex items-center gap-3 p-3 rounded-lg mb-3 cursor-pointer transition-colors hover:bg-gray-100;
+            }
+            .option-selected {
+                @apply bg-blue-50 text-blue-600 border border-blue-200;
+            }
+            .result-card {
+                @apply bg-white p-6 rounded-xl shadow-md mb-6 hidden;
+            }
+            .correct {
+                @apply border-l-4 border-green-500;
+            }
+            .wrong {
+                @apply border-l-4 border-red-500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 自测主体 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-100">
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">大厂高频面试选择题自测</h2>
+                    <p class="text-gray-500 text-center">共15题，每题1分，满分15分，看看你能拿多少分！</p>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-gray-600"><i class="fa fa-clock-o mr-1"></i> 建议答题时间：20分钟</span>
+                        <span class="text-gray-600"><i class="fa fa-star mr-1"></i> 涵盖Python/算法/网络/数据库</span>
+                    </div>
+
+                    <!-- 答题区 -->
+                    <div id="questionContainer" class="mb-8">
+                        <!-- 题目1 -->
+                        <div class="question-card" data-id="1">
+                            <h3 class="text-lg font-semibold mb-4">1. Python中以下哪个数据类型是不可变的？（字节跳动）</h3>
+                            <div class="option-item" data-answer="A">
+                                <input type="radio" name="q1" id="q1a" class="w-4 h-4 accent-blue-500">
+                                <label for="q1a">A. 列表（list）</label>
+                            </div>
+                            <div class="option-item" data-answer="B">
+                                <input type="radio" name="q1" id="q1b" class="w-4 h-4 accent-blue-500">
+                                <label for="q1b">B. 字典（dict）</label>
+                            </div>
+                            <div class="option-item" data-answer="C">
+                                <input type="radio" name="q1" id="q1c" class="w-4 h-4 accent-blue-500">
+                                <label for="q1c">C. 元组（tuple）</label>
+                            </div>
+                            <div class="option-item" data-answer="D">
+                                <input type="radio" name="q1" id="q1d" class="w-4 h-4 accent-blue-500">
+                                <label for="q1d">D. 集合（set）</label>
+                            </div>
+                        </div>
+
+                        <!-- 题目2 -->
+                        <div class="question-card" data-id="2">
+                            <h3 class="text-lg font-semibold mb-4">2. 以下哪种排序算法平均时间复杂度为O(nlogn)？（阿里）</h3>
+                            <div class="option-item" data-answer="A">
+                                <input type="radio" name="q2" id="q2a" class="w-4 h-4 accent-blue-500">
+                                <label for="q2a">A. 冒泡排序</label>
+                            </div>
+                            <div class="option-item" data-answer="B">
+                                <input type="radio" name="q2" id="q2b" class="w-4 h-4 accent-blue-500">
+                                <label for="q2b">B. 选择排序</label>
+                            </div>
+                            <div class="option-item" data-answer="C">
+                                <input type="radio" name="q2" id="q2c" class="w-4 h-4 accent-blue-500">
+                                <label for="q2c">C. 插入排序</label>
+                            </div>
+                            <div class="option-item" data-answer="D">
+                                <input type="radio" name="q2" id="q2d" class="w-4 h-4 accent-blue-500">
+                                <label for="q2d">D. 归并排序</label>
+                            </div>
+                        </div>
+
+                        <!-- 题目3 -->
+                        <div class="question-card" data-id="3">
+                            <h3 class="text-lg font-semibold mb-4">3. Python中，以下哪个赋值语句非法？（腾讯）</h3>
+                            <div class="option-item" data-answer="A">
+                                <input type="radio" name="q3" id="q3a" class="w-4 h-4 accent-blue-500">
+                                <label for="q3a">A. x = y = z = 1</label>
+                            </div>
+                            <div class="option-item" data-answer="B">
+                                <input type="radio" name="q3" id="q3b" class="w-4 h-4 accent-blue-500">
+                                <label for="q3b">B. x = (y = z + 1)</label>
+                            </div>
+                            <div class="option-item" data-answer="C">
+                                <input type="radio" name="q3" id="q3c" class="w-4 h-4 accent-blue-500">
+                                <label for="q3c">C. x, y = y, x</label>
+                            </div>
+                            <div class="option-item" data-answer="D">
+                                <input type="radio" name="q3" id="q3d" class="w-4 h-4 accent-blue-500">
+                                <label for="q3d">D. x += y</label>
+                            </div>
+                        </div>
+
+                        <!-- 题目4 -->
+                        <div class="question-card" data-id="4">
+                            <h3 class="text-lg font-semibold mb-4">4. 下列关于TCP的描述，正确的是？（美团）</h3>
+                            <div class="option-item" data-answer="A">
+                                <input type="radio" name="q4" id="q4a" class="w-4 h-4 accent-blue-500">
+                                <label for="q4a">A. 无连接</label>
+                            </div>
+                            <div class="option-item" data-answer="B">
+                                <input type="radio" name="q4" id="q4b" class="w-4 h-4 accent-blue-500">
+                                <label for="q4b">B. 面向字节流</label>
+                            </div>
+                            <div class="option-item" data-answer="C">
+                                <input type="radio" name="q4" id="q4c" class="w-4 h-4 accent-blue-500">
+                                <label for="q4c">C. 不可靠传输</label>
+                            </div>
+                            <div class="option-item" data-answer="D">
+                                <input type="radio" name="q4" id="q4d" class="w-4 h-4 accent-blue-500">
+                                <label for="q4d">D. 不支持拥塞控制</label>
+                            </div>
+                        </div>
+
+                        <!-- 题目5 -->
+                        <div class="question-card" data-id="5">
+                            <h3 class="text-lg font-semibold mb-4">5. MySQL中，InnoDB不具备以下哪个特性？（华为）</h3>
+                            <div class="option-item" data-answer="A">
+                                <input type="radio" name="q5" id="q5a" class="w-4 h-4 accent-blue-500">
+                                <label for="q5a">A. 事务支持</label>
+                            </div>
+                            <div class="option-item" data-answer="B">
+                                <input type="radio" name="q5" id="q5b" class="w-4 h-4 accent-blue-500">
+                                <label for="q5b">B. 行级锁</label>
+                            </div>
+                            <div class="option-item" data-answer="C">
+                                <input type="radio" name="q5" id="q5c" class="w-4 h-4 accent-blue-500">
+                                <label for="q5c">C. 全文索引（早期版本）</label>
+                            </div>
+                            <div class="option-item" data-answer="D">
+                                <input type="radio" name="q5" id="q5d" class="w-4 h-4 accent-blue-500">
+                                <label for="q5d">D. 表级锁优先</label>
+                            </div>
+                        </div>
+
+                        <!-- 题目6-15 此处省略，可按照上述格式补充 -->
+                        <div class="question-card" data-id="6">
+                            <h3 class="text-lg font-semibold mb-4">6. Python中，以下哪个不是合法标识符？（百度）</h3>
+                            <div class="option-item" data-answer="A">
+                                <input type="radio" name="q6" id="q6a" class="w-4 h-4 accent-blue-500">
+                                <label for="q6a">A. int32</label>
+                            </div>
+                            <div class="option-item" data-answer="B">
+                                <input type="radio" name="q6" id="q6b" class="w-4 h-4 accent-blue-500">
+                                <label for="q6b">B. 40XL</label>
+                            </div>
+                            <div class="option-item" data-answer="C">
+                                <input type="radio" name="q6" id="q6c" class="w-4 h-4 accent-blue-500">
+                                <label for="q6c">C. self</label>
+                            </div>
+                            <div class="option-item" data-answer="D">
+                                <input type="radio" name="q6" id="q6d" class="w-4 h-4 accent-blue-500">
+                                <label for="q6d">D. __name__</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <div class="text-center mb-8">
+                        <button id="submitBtn" class="submit-btn">
+                            <i class="fa fa-check mr-2"></i> 提交答案，查看得分
+                        </button>
+                    </div>
+
+                    <!-- 结果展示区 -->
+                    <div id="resultContainer" class="result-card">
+                        <h3 class="text-xl font-bold text-center mb-4" id="scoreTitle">你的得分：0/15</h3>
+                        <div class="mb-4 text-center" id="levelDesc">
+                            <span class="inline-block px-4 py-2 rounded-full bg-gray-100 text-gray-600">未答题，暂无评级</span>
+                        </div>
+                        <div class="text-center mb-6">
+                            <button id="showAnswerBtn" class="custom-btn">
+                                <i class="fa fa-list mr-2"></i> 查看详细答案解析
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 答案解析区 -->
+                    <div id="answerContainer" class="hidden">
+                        <h3 class="text-xl font-bold mb-6 text-center">答案与解析</h3>
+                        <div class="space-y-6">
+                            <div class="p-4 rounded-lg bg-gray-50">
+                                <p class="font-medium">1. 答案：C | 解析：元组创建后不可修改，列表、字典、集合可变</p>
+                            </div>
+                            <div class="p-4 rounded-lg bg-gray-50">
+                                <p class="font-medium">2. 答案：D | 解析：归并排序稳定且平均复杂度O(nlogn)，其余三个均为O(n²)</p>
+                            </div>
+                            <div class="p-4 rounded-lg bg-gray-50">
+                                <p class="font-medium">3. 答案：B | 解析：Python不支持链式赋值嵌套括号的写法</p>
+                            </div>
+                            <!-- 后续题目解析按此格式补充 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa fa-code text-blue-400"></i> SDE 学习资源</h4>
+                    <p class="text-gray-400">为学生提供高质量的软件开发学习内容，助力技术成长</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">快速链接</h5>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="articles.html" class="text-gray-400 hover:text-white transition-colors">文章</a></li>
+                        <li><a href="resources.html" class="text-gray-400 hover:text-white transition-colors">资源</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition-colors">关于</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">关注我们</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-600 transition-colors"><i class="fa fa-play-circle"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-red-600 transition-colors"><i class="fa fa-music"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-green-600 transition-colors"><i class="fa fa-envelope-o"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                &copy; 2024 SDE 学习资源 | 学生专属学习平台
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+
+        // 选项点击高亮
+        document.querySelectorAll('.option-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const name = item.querySelector('input').name;
+                document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+                    radio.parentElement.classList.remove('option-selected');
+                });
+                item.classList.add('option-selected');
+            });
+        });
+
+        // 正确答案映射
+        const correctAnswers = {
+            1: 'C', 2: 'D', 3: 'B', 4: 'B', 5: 'D',
+            6: 'B', 7: 'A', 8: 'C', 9: 'C', 10: 'A',
+            11: 'D', 12: 'B', 13: 'C', 14: 'B', 15: 'D'
+        };
+
+        // 提交评分
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            let score = 0;
+            let answeredCount = 0;
+
+            // 计算得分
+            document.querySelectorAll('.question-card').forEach(card => {
+                const qid = parseInt(card.dataset.id);
+                const selected = card.querySelector('input:checked');
+                if (selected) {
+                    answeredCount++;
+                    if (selected.value === correctAnswers[qid]) {
+                        score++;
+                        card.classList.remove('wrong');
+                        card.classList.add('correct');
+                    } else {
+                        card.classList.remove('correct');
+                        card.classList.add('wrong');
+                    }
+                }
+            });
+
+            // 显示结果
+            const resultContainer = document.getElementById('resultContainer');
+            const scoreTitle = document.getElementById('scoreTitle');
+            const levelDesc = document.getElementById('levelDesc');
+            
+            scoreTitle.textContent = `你的得分：${score}/15`;
+            resultContainer.classList.remove('hidden');
+
+            // 评级
+            let level = '';
+            let levelClass = '';
+            if (score >= 13) {
+                level = '大神级别，稳过面试！';
+                levelClass = 'bg-green-100 text-green-600';
+            } else if (score >= 10) {
+                level = '优秀水平，再冲一波！';
+                levelClass = 'bg-blue-100 text-blue-600';
+            } else if (score >= 6) {
+                level = '合格水平，继续努力！';
+                levelClass = 'bg-yellow-100 text-yellow-600';
+            } else {
+                level = '基础薄弱，加强学习！';
+                levelClass = 'bg-red-100 text-red-600';
+            }
+            levelDesc.innerHTML = `<span class="inline-block px-4 py-2 rounded-full ${levelClass}">${level}（已答${answeredCount}题）</span>`;
+        });
+
+        // 显示答案解析
+        document.getElementById('showAnswerBtn').addEventListener('click', () => {
+            const answerContainer = document.getElementById('answerContainer');
+            answerContainer.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于 SDE - 本站故事 | SDE 学习资源</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- PDF导出库 - 使用支持中文的版本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 引入支持中文的字体 -->
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .export-btn {
+                @apply inline-flex items-center bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-red-200 hover:scale-105 shadow-md;
+            }
+            .code-block {
+                @apply bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm my-4;
+            }
+            .loading-overlay {
+                @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+            }
+            .loading-spinner {
+                @apply w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin;
+            }
+            .loading-text {
+                @apply text-white text-xl mt-4;
+            }
+            .audio-controls {
+                @apply bg-blue-50 p-4 rounded-lg flex items-center gap-4 mb-6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 - 与原页面完全一致 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 文章详情 - 内容替换为SDE本站故事 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- 文章主体 -->
+            <div class="lg:w-2/3">
+                <article class="bg-white rounded-xl shadow-md overflow-hidden" id="articleContent">
+                    <!-- 文章封面 -->
+                    <img src="https://picsum.photos/id/180/1200/600" alt="SDE网站故事" class="w-full h-64 md:h-96 object-cover">
+                    
+                    <!-- 文章工具栏 -->
+                    <div class="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-sm">本站故事</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-calendar-o mr-1"></i> 2024-01-20</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> 10分钟阅读</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="exportPdfBtn" class="export-btn">
+                                <i class="fa fa-file-pdf-o mr-1"></i> 
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 音频朗读控件 - 保留原风格 -->
+                    <div class="audio-controls px-6">
+                        <button id="audioToggle" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors">
+                            <i class="fa fa-play"></i>
+                        </button>
+                        <div>
+                            <p class="font-medium">文章朗读</p>
+                            <p class="text-sm text-gray-600">点击播放按钮听取本站故事</p>
+                        </div>
+                        <audio id="articleAudio" preload="none">
+                            <source src="./resource/AUDIO/sde-story.MP3" type="audio/mpeg">
+                            您的浏览器不支持音频播放
+                        </audio>
+                    </div>
+                    
+                    <!-- 文章内容 - SDE本站故事核心内容 -->
+                    <div class="p-6">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">SDE (StudyDoingExperiment)：我万万没想到，这个网站居然能上线！</h1>
+                        
+                        <!-- 文章正文 -->
+                        <div class="text-gray-700 space-y-4">
+                            <p>你好，我是靳爷 (SDE 网站的创建者)今天想和你聊聊这个网站的诞生故事——一个始于初中信息课作业，最终落地上线的小小奇迹。</p>
+                            
+                            <h2 class="text-xl font-bold mt-8 mb-4">一、缘起：一节普通的信息课作业</h2>
+                            <p>一切都要从初中的一节信息课说起。那天，老师给我们布置了一个简单的作业：做一个「网上工具分类」整理，形式不限，只要能清晰呈现分类内容即可。</p>
+                            <p>当时班里的同学，几乎所有人都选择了用 Word 制作 DOCX 文档——找个模板，复制粘贴工具名称和介绍，调整一下格式，一份中规中矩的作业就完成了。这确实是最稳妥、最省力的选择。</p>
+                            <p>而我，当时突然冒出一个「大胆」的想法：为什么不用 HTML 来做呢？既能实现更美观的排版，还能添加交互效果，比单调的 Word 文档有趣多了！</p>
+                            
+                            <h2 class="text-xl font-bold mt-8 mb-4">二、坚持：每天更新，打磨出「牛逼」的页面</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">从简陋初稿到精致页面</h3>
+                            <p>一开始，我的 HTML 页面非常简陋：只有基本的标签、单调的文字排版，甚至连 CSS 样式都很少。但我没有满足于初稿，而是把它当成了一个长期的小项目，每天都花一点时间更新优化。</p>
+                            <ol class="list-decimal pl-6 space-y-2 mb-4">
+                                <li>第一天：完善工具分类结构，补充各类学习工具、编程工具的信息</li>
+                                <li>第二天：学习 CSS 基础，给页面添加背景、字体、间距样式，告别「纯文本」视觉</li>
+                                <li>第三天：添加简单的交互效果，比如鼠标悬浮高亮、导航跳转等</li>
+                                <li>后续日子：不断补充内容、优化布局、修复bug，让页面越来越精致</li>
+                            </ol>
+                            
+                            <p>就这样，原本一份简单的作业，被我打磨成了一个排版美观、功能实用、内容丰富的 HTML 页面。现在回想起来，当时的我也没想到，自己会为一份作业投入这么多时间和精力。</p>
+                            
+                            <h3 class="text-lg font-semibold mt-6 mb-2">意外的收获：一份高分作业</h3>
+                            <p>
+                                作业提交那天，当我把我的 HTML 页面展示给老师和同学时，大家都很惊讶——没人想到一份工具分类作业，能以网页的形式呈现得如此出色。
+                                <del>不出所料，我这份与众不同的作业，最终拿到了一个高分。</del>
+                            </p>
+                            <p>这份肯定，也给了我很大的鼓励，让我对网页制作和编程的兴趣更加浓厚。</p>
+                            
+                            <h2 class="text-xl font-bold mt-8 mb-4">三、蜕变：从课堂作业到正式上线网站</h2>
+                            <p>（吹了个牛逼当为了元这个牛逼真的做了出来时1天做了10多个页面）这份 HTML 作业一直躺在我的硬盘里。随着我不断学习编程知识（Python、前端框架、服务器部署等），一个想法逐渐萌生：能不能把这份作业，升级成一个正式的学习资源网站？</p>
+                            
+                            <h3 class="text-lg font-semibold mt-4 mb-2">技术支撑：感谢微软，感谢 GitHub</h3>
+                            <p>在网站搭建和上线的过程中，两个平台给了我极大的帮助，必须好好感谢它们：</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li><strong>微软</strong>：提供了免费的开发工具（VS Code）和云服务支持，让我能高效地编写代码、调试功能，降低了开发门槛</li>
+                                <li><strong>GitHub</strong>：不仅是代码托管平台，还通过 GitHub Pages 提供了免费的静态网站托管服务，让我的网站能够零成本上线，被全球用户访问</li>
+                            </ul>
+                            
+                            <h3 class="text-lg font-semibold mt-6 mb-2">命名：SDE (StudyDoingExperiment)</h3>
+                            <p>在网站正式上线前，我给它起了个名字——SDE，对应三个英文单词：<strong>Study（学习）</strong>、<strong>Doing（实践）</strong>、<strong>Experiment（实验）</strong>。</p>
+                            <p>这三个词，既是我创建这个网站的初衷：为学习者提供优质的学习资源，鼓励大家动手实践、大胆实验；也是我自己学习编程的信条——光学不练假把式，在实践和实验中才能真正掌握技术。</p>
+                            <del>说个实话其实SDE这几个字母是我瞎打的没想到Ai给我编了个这么长的故事</del>
+                            
+                            <h2 class="text-xl font-bold mt-8 mb-4">四、感慨：我万万没想到，它真的上线了</h2>
+                            <p>从一节信息课的 HTML 作业，到一个正式上线的学习资源网站，这个过程远比我想象的要漫长，也远比我想象的要精彩。</p>
+                            <p>初中时的我，只是想做一份与众不同的作业，从未想过这份作业会成为一个上线网站的雏形；学习编程的过程中，我也有过迷茫和挫败，从未笃定这个网站能真正落地。</p>
+                            <p>但现在，它真的上线了。它不仅是一个学习资源平台，更是我成长的见证——见证了我的兴趣、坚持和成长。</p>
+                            
+                            <h2 class="text-xl font-bold mt-8 mb-4">五、未来：继续深耕，助力更多学习者</h2>
+                            <p>目前，SDE 网站已经上线了编程基础、数据结构、Web开发、数据库等多个板块的学习内容，未来我还会继续更新：</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li>补充更多优质学习文章和实战案例</li>
+                                <li>优化网站功能和用户体验</li>
+                                <li>增加互动板块，让学习者能够互相交流、共同进步</li>
+                            </ul>
+                            <p>希望这个始于初中作业的小小网站，能帮助更多和我一样热爱学习、热爱编程的人，在技术成长的道路上，少走一些弯路，多一些收获。</p>
+                        </div>
+                        
+                        <!-- 文章底部 -->
+                        <div class="mt-10 pt-6 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4">相关推荐</h3>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="about.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">网站使用指南</a>
+                                <a href="resources.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">优质学习资源汇总</a>
+                                <a href="articles.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">更多建站故事</a>
+                            </div>
+                            <div class="mt-8 flex gap-4">
+                                <a href="index.html" class="custom-btn"><i class="fa fa-arrow-left mr-2"></i> 返回首页</a>
+                                <a href="#" class="custom-btn bg-blue-500 text-white hover:bg-blue-600"><i class="fa fa-share mr-2"></i> 分享本站故事</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- 侧边栏 - 沿用原风格，微调内容 -->
+            <div class="lg:w-1/3">
+                <!-- 网站创建者信息 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="https://picsum.photos/id/1001/200/200" alt="创建者头像" class="w-16 h-16 rounded-full object-cover">
+                        <div>
+                            <h4 class="font-bold text-lg">靳爷</h4>
+                            <p class="text-gray-500 text-sm">编程爱好者 | 全栈开发入门者</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">从HTML作业起步，深耕学习资源分享，致力于打造学生专属的优质编程学习平台。</p>
+                    <a href="about.html" class="custom-btn w-full justify-center">了解更多关于我</a>
+                </div>
+
+                <!-- 热门文章 - 沿用原风格 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-fire text-red-500"></i> 热门文章</h4>
+                    <div class="space-y-4">
+                        <a href="python.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/0/200/200" alt="Python基础" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">Python 编程入门：从零到一的学习路径</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 1200次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="algorithms.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/180/200/200" alt="算法" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">数据结构与算法：面试必备知识点</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 980次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="web-dev.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/160/200/200" alt="Web开发" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">现代前端开发：从HTML到React</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 850次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 导出加载提示 - 与原页面一致 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在生成PDF文件...</div>
+        </div>
+    </div>
+
+    <!-- 页脚 - 与原页面完全一致 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa fa-code text-blue-400"></i> SDE 学习资源</h4>
+                    <p class="text-gray-400">为学生提供高质量的软件开发学习内容，助力技术成长</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">快速链接</h5>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="articles.html" class="text-gray-400 hover:text-white transition-colors">文章</a></li>
+                        <li><a href="resources.html" class="text-gray-400 hover:text-white transition-colors">资源</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition-colors">关于</a></li>
+                        <li><a href="help.html" class="text-gray-400 hover:text-white transition-colors">帮助</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">关注我们</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-600 transition-colors" title="B站">
+                            <i class="fa fa-play-circle"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-red-600 transition-colors" title="抖音">
+                            <i class="fa fa-music"></i>
+                        </a>
+                        <a href="mailto:contact@sde-study.com" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-green-600 transition-colors" title="电子邮件">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                    </div>
+                    <p class="mt-4 text-gray-400">联系我们: contact@sde-study.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                &copy; 2024 SDE 学习资源 | 学生专属学习平台
+            </div>
+        </div>
+    </footer>
+
+    <!-- 脚本 - 与原页面完全一致，保证功能可用 -->
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+
+        // 音频播放功能
+        const audioToggle = document.getElementById('audioToggle');
+        const articleAudio = document.getElementById('articleAudio');
+        
+        audioToggle.addEventListener('click', function() {
+            if (articleAudio.paused) {
+                articleAudio.play()
+                    .then(() => {
+                        audioToggle.innerHTML = '<i class="fa fa-pause"></i>';
+                    })
+                    .catch(error => {
+                        console.error('音频播放失败:', error);
+                        alert('音频播放失败，请检查文件路径是否正确: ./resource/AUDIO/sde-story.MP3');
+                    });
+            } else {
+                articleAudio.pause();
+                audioToggle.innerHTML = '<i class="fa fa-play"></i>';
+            }
+        });
+
+        // PDF导出功能 - 修复乱码问题
+        document.addEventListener('DOMContentLoaded', function() {
+            const { jsPDF } = window.jspdf;
+            const exportBtn = document.getElementById('exportPdfBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const articleContent = document.getElementById('articleContent');
+            const articleTitle = document.querySelector('h1').textContent || 'SDE本站故事';
+            
+            // 预加载支持中文的字体数据（使用base64编码的字体）
+            const chineseFontData = null; // 在实际应用中需要提供字体数据
+            
+            exportBtn.addEventListener('click', async function() {
+                try {
+                    // 显示加载状态
+                    loadingOverlay.classList.remove('hidden');
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 处理中...';
+                    
+                    // 使用html2canvas方法生成PDF（解决中文乱码问题）
+                    await generatePDFWithHtml2Canvas();
+                    
+                    // 提示成功
+                    alert('PDF导出成功！文件已保存到下载目录。');
+                } catch (error) {
+                    console.error('PDF导出失败:', error);
+                    alert('PDF导出失败: ' + error.message);
+                } finally {
+                    // 恢复状态
+                    loadingOverlay.classList.add('hidden');
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = '<i class="fa fa-file-pdf-o mr-1"></i> 导出PDF';
+                }
+            });
+            
+            // 使用html2canvas方法生成PDF（解决中文显示问题）
+            async function generatePDFWithHtml2Canvas() {
+                // 创建PDF实例
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                // 获取文章内容元素
+                const content = document.querySelector('#articleContent .p-6');
+                
+                // 克隆内容元素以避免影响原始页面
+                const clonedContent = content.cloneNode(true);
+                
+                // 移除不需要导出的元素
+                const unwantedElements = clonedContent.querySelectorAll('a, button, .audio-controls');
+                unwantedElements.forEach(el => el.remove());
+                
+                // 将克隆元素添加到页面（但隐藏它）
+                clonedContent.style.position = 'absolute';
+                clonedContent.style.top = '-9999px';
+                clonedContent.style.left = '-9999px';
+                clonedContent.style.width = content.offsetWidth + 'px';
+                document.body.appendChild(clonedContent);
+                
+                try {
+                    // 使用html2canvas将内容转换为图片
+                    const canvas = await html2canvas(clonedContent, {
+                        scale: 2, // 提高分辨率
+                        useCORS: true, // 允许跨域图片
+                        logging: false
+                    });
+                    
+                    // 将canvas转换为图片数据
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    
+                    // A4尺寸，单位是mm
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    // 添加图片到PDF
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    // 处理分页
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    
+                    // 保存PDF
+                    pdf.save(`${articleTitle}.pdf`);
+                } finally {
+                    // 清理克隆元素
+                    document.body.removeChild(clonedContent);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

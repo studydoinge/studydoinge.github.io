@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全损音频压缩神器（软盘适配+自定义爆音版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Arial", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .compressor-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        .input-section {
+            margin-bottom: 1.2rem;
+        }
+        .input-section label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        #audio-file {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #f9f9f9;
+            cursor: pointer;
+        }
+        .control-section {
+            margin-bottom: 1.2rem;
+        }
+        #loss-slider {
+            width: 100%;
+            height: 6px;
+            accent-color: #2c7edb;
+            cursor: pointer;
+        }
+        .loss-desc {
+            text-align: right;
+            color: #2c7edb;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+        .prank-mode {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #fff0f0;
+            border-radius: 6px;
+            border: 1px solid #ffd1d1;
+        }
+        .prank-switch-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .prank-switch-wrap input {
+            width: 18px;
+            height: 18px;
+            accent-color: #e64343;
+            cursor: pointer;
+        }
+        .prank-switch-wrap label {
+            color: #e64343;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .prank-slider-wrap {
+            margin-bottom: 0.5rem;
+            display: none;
+        }
+        .prank-slider-wrap label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #d13636;
+            font-size: 0.85rem;
+        }
+        #pop-intensity {
+            width: 100%;
+            height: 6px;
+            accent-color: #e64343;
+            cursor: pointer;
+        }
+        .pop-desc {
+            text-align: right;
+            color: #e64343;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+        }
+        .btn-group {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        button {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 6px;
+            background: #2c7edb;
+            color: #fff;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:disabled {
+            background: #b3d1f3;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background: #1f65b9;
+        }
+        #export-btn {
+            background: #36ad6a;
+        }
+        #export-btn:hover:not(:disabled) {
+            background: #2a8e54;
+        }
+        .preview-section {
+            margin-top: 1.5rem;
+            display: none;
+        }
+        audio {
+            width: 100%;
+            margin-top: 0.5rem;
+            border-radius: 4px;
+        }
+        .tips {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: #fff8e6;
+            color: #d48806;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+        .prank-tip {
+            color: #e64343;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="compressor-box">
+        <h1>全损音频压缩神器（软盘适配+自定义爆音版）</h1>
+        
+        <div class="input-section">
+            <label for="audio-file">选择要压缩的音频文件</label>
+            <input type="file" id="audio-file" accept="audio/*">
+        </div>
+
+        <div class="control-section">
+            <label for="loss-slider">音质损失程度（0=无损 → 10=软盘专属究极全损）</label>
+            <input type="range" id="loss-slider" min="0" max="10" value="5" step="1">
+            <div class="loss-desc" id="loss-desc">当前：中度半损（适配U盘）</div>
+        </div>
+
+        <div class="prank-mode">
+            <div class="prank-switch-wrap">
+                <input type="checkbox" id="prank-switch">
+                <label for="prank-switch">开启整蛊爆音模式（慎用！会产生高频爆音）</label>
+            </div>
+            <div class="prank-slider-wrap" id="prank-slider-wrap">
+                <label for="pop-intensity">爆音强度（0=轻微 → 10=炸裂）</label>
+                <input type="range" id="pop-intensity" min="0" max="10" value="5" step="1">
+                <div class="pop-desc" id="pop-desc">当前：中度爆音（整蛊刚好）</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button id="process-btn" disabled>开始处理音频</button>
+            <button id="export-btn" disabled>导出全损音频</button>
+        </div>
+
+        <div class="preview-section" id="preview-section">
+            <label>处理后音频预览</label>
+            <audio id="preview-audio" controls>
+        </div>
+
+        <div class="tips">
+            小贴士：损失程度调至8-10档可将整张专辑压入3.5英寸软盘；<span class="prank-tip">爆音强度越高，高频噪音和音量突变越明显，建议先低音量测试</span>；处理后的音频为极低码率格式，仅保障可识别，不保证音质；导出后建议校验文件大小是否适配目标存储介质。
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const audioFile = document.getElementById('audio-file');
+        const lossSlider = document.getElementById('loss-slider');
+        const lossDesc = document.getElementById('loss-desc');
+        const prankSwitch = document.getElementById('prank-switch');
+        const prankSliderWrap = document.getElementById('prank-slider-wrap');
+        const popIntensity = document.getElementById('pop-intensity');
+        const popDesc = document.getElementById('pop-desc');
+        const processBtn = document.getElementById('process-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const previewSection = document.getElementById('preview-section');
+        const previewAudio = document.getElementById('preview-audio');
+
+        let audioContext;
+        let originalAudioBuffer;
+        let processedAudioBlob;
+
+        // 损失程度描述映射
+        const lossDescMap = [
+            "无损（无压缩）",
+            "轻微损耗（接近原音质）",
+            "低度半损（日常听歌）",
+            "中度半损（适配U盘）",
+            "中高度半损（节省空间）",
+            "重度半损（复古收音机质感）",
+            "轻度全损（磁带卡壳质感）",
+            "中度全损（老座机通话质感）",
+            "高度全损（水下传音质感）",
+            "究极全损（操场广播质感）",
+            "软盘专属究极全损（1.44MB塞整张专辑）"
+        ];
+
+        // 爆音强度描述映射
+        const popDescMap = [
+            "无爆音（仅开启模式无效果）",
+            "微爆破音（几乎听不见）",
+            "轻微爆音（偶尔跳一下）",
+            "低度爆音（有点小惊喜）",
+            "中低度爆音（整蛊入门级）",
+            "中度爆音（整蛊刚好）",
+            "中高度爆音（有点炸裂）",
+            "高度爆音（耳膜警告）",
+            "重度爆音（音响渡劫）",
+            "究极爆音（设备劝退）",
+            "炸裂爆音（慎用！易损设备）"
+        ];
+
+        // 更新损失程度描述
+        lossSlider.addEventListener('input', () => {
+            const level = parseInt(lossSlider.value);
+            lossDesc.textContent = `当前：${lossDescMap[level]}`;
+        });
+
+        // 爆音模式开关控制
+        prankSwitch.addEventListener('change', () => {
+            prankSliderWrap.style.display = prankSwitch.checked ? 'block' : 'none';
+        });
+
+        // 更新爆音强度描述
+        popIntensity.addEventListener('input', () => {
+            const level = parseInt(popIntensity.value);
+            popDesc.textContent = `当前：${popDescMap[level]}`;
+        });
+
+        // 监听文件选择
+        audioFile.addEventListener('change', () => {
+            if (audioFile.files.length > 0) {
+                processBtn.disabled = false;
+                initAudioContext();
+                loadAudioFile(audioFile.files[0]);
+            }
+        });
+
+        // 初始化音频上下文
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // 加载音频文件
+        function loadAudioFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                audioContext.decodeAudioData(e.target.result, (buffer) => {
+                    originalAudioBuffer = buffer;
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 处理音频
+        processBtn.addEventListener('click', () => {
+            if (!originalAudioBuffer) return;
+
+            const lossLevel = parseInt(lossSlider.value);
+            const isPrankMode = prankSwitch.checked;
+            const popLevel = parseInt(popIntensity.value) / 10; // 转为0-1的强度系数
+            const processedBuffer = degradeAudio(originalAudioBuffer, lossLevel, isPrankMode, popLevel);
+            
+            // 转换为Blob并生成预览URL
+            audioBufferToBlob(processedBuffer, (blob) => {
+                processedAudioBlob = blob;
+                const previewUrl = URL.createObjectURL(blob);
+                previewAudio.src = previewUrl;
+                previewSection.style.display = 'block';
+                exportBtn.disabled = false;
+            });
+
+            const btnText = isPrankMode ? `整蛊爆音(${popDescMap[parseInt(popIntensity.value)]})已生成` : "处理完成";
+            processBtn.textContent = btnText;
+            setTimeout(() => {
+                processBtn.textContent = "开始处理音频";
+            }, 2000);
+        });
+
+        // 音频降级处理（核心全损+自定义爆音逻辑）
+        function degradeAudio(buffer, lossLevel, isPrankMode, popLevel) {
+            const channels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const length = buffer.length;
+            const newBuffer = audioContext.createBuffer(channels, length, sampleRate);
+
+            for (let c = 0; c < channels; c++) {
+                const channelData = buffer.getChannelData(c);
+                const newChannelData = newBuffer.getChannelData(c);
+
+                // 复制原始数据
+                newChannelData.set(channelData);
+
+                // 根据损失程度添加失真、降采样、滤波等效果
+                const degradeIntensity = lossLevel / 10;
+
+                // 1. 降低采样率（模拟低码率）
+                const downsampleRate = Math.max(8000, sampleRate * (1 - degradeIntensity * 0.8));
+                const step = Math.round(sampleRate / downsampleRate);
+                for (let i = 0; i < length; i += step) {
+                    const val = newChannelData[i];
+                    for (let j = i; j < i + step && j < length; j++) {
+                        newChannelData[j] = val;
+                    }
+                }
+
+                // 2. 添加噪音
+                const noiseAmplitude = degradeIntensity * 0.05;
+                for (let i = 0; i < length; i++) {
+                    newChannelData[i] += (Math.random() * 2 - 1) * noiseAmplitude;
+                }
+
+                // 3. 限幅失真（模拟信号过载）
+                const distortionThreshold = 0.2 + degradeIntensity * 0.6;
+                for (let i = 0; i < length; i++) {
+                    if (newChannelData[i] > distortionThreshold) newChannelData[i] = distortionThreshold;
+                    if (newChannelData[i] < -distortionThreshold) newChannelData[i] = -distortionThreshold;
+                }
+
+                // 4. 过滤高低频（模拟老旧设备）
+                if (degradeIntensity > 0.5) {
+                    const lowFreq = 300 + degradeIntensity * 200;
+                    const highFreq = 3000 - degradeIntensity * 2000;
+                    for (let i = 0; i < length; i++) {
+                        const freq = (i / length) * sampleRate / 2;
+                        if (freq < lowFreq || freq > highFreq) {
+                            newChannelData[i] *= 0.1;
+                        }
+                    }
+                }
+
+                // 5. 自定义爆音模式：根据强度调节爆音参数
+                if (isPrankMode && popLevel > 0) {
+                    // 爆音间隔（强度越高，间隔越短）
+                    const popInterval = Math.floor(Math.random() * (8000 - popLevel * 7000)) + 1000;
+                    // 爆音振幅（强度越高，振幅越大）
+                    const popAmplitude = 0.2 + popLevel * 0.8;
+                    // 爆音长度（强度越高，爆音越长）
+                    const popBaseLength = 10 + popLevel * 90;
+
+                    // 生成随机爆音
+                    for (let i = 0; i < length; i += popInterval) {
+                        const popLength = Math.floor(Math.random() * popBaseLength) + 10;
+                        for (let j = i; j < i + popLength && j < length; j++) {
+                            newChannelData[j] = Math.random() > 0.5 ? popAmplitude : -popAmplitude;
+                        }
+                    }
+
+                    // 随机音量突变（强度越高，突变次数越多、幅度越大）
+                    const volumeJumpCount = Math.floor(popLevel * 5) + 1;
+                    const jumpFactorBase = 1.5 + popLevel * 3.5;
+                    for (let p = 0; p < volumeJumpCount; p++) {
+                        const jumpPos = Math.floor(Math.random() * length);
+                        const jumpFactor = Math.random() * jumpFactorBase + 1;
+                        const jumpLength = Math.floor(Math.random() * (popLevel * 3000)) + 500;
+                        for (let j = jumpPos; j < jumpPos + jumpLength && j < length; j++) {
+                            newChannelData[j] *= jumpFactor;
+                        }
+                    }
+
+                    // 高强度额外添加高频噪音
+                    if (popLevel > 0.7) {
+                        const highFreqNoiseAmplitude = popLevel * 0.1;
+                        for (let i = 0; i < length; i++) {
+                            if (i % 20 === 0) {
+                                newChannelData[i] += (Math.random() * 2 - 1) * highFreqNoiseAmplitude * 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return newBuffer;
+        }
+
+        // 将AudioBuffer转换为Blob
+        function audioBufferToBlob(buffer, callback) {
+            const numberOfChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const bitsPerSample = 16;
+            const bytesPerSample = bitsPerSample / 8;
+            const blockAlign = numberOfChannels * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const dataLength = buffer.length * blockAlign;
+
+            const bufferArray = new ArrayBuffer(44 + dataLength);
+            const view = new DataView(bufferArray);
+
+            // 写入WAV文件头
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataLength, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numberOfChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataLength, true);
+
+            // 写入音频数据
+            let offset = 44;
+            for (let i = 0; i < buffer.length; i++) {
+                for (let c = 0; c < numberOfChannels; c++) {
+                    const sample = buffer.getChannelData(c)[i];
+                    const clamped = Math.max(-1, Math.min(1, sample));
+                    const intSample = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff;
+                    view.setInt16(offset, intSample, true);
+                    offset += 2;
+                }
+            }
+
+            callback(new Blob([bufferArray], { type: 'audio/wav' }));
+        }
+
+        // 写入字符串到DataView
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // 导出音频
+        exportBtn.addEventListener('click', () => {
+            if (!processedAudioBlob) return;
+            const prankSuffix = prankSwitch.checked ? `_整蛊爆音${popIntensity.value}级` : "";
+            const fileName = audioFile.files[0].name.replace(/\.\w+$/, `_全损${lossSlider.value}级${prankSuffix}.wav`);
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(processedAudioBlob);
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        });
+    </script>
+</body>
+</html>

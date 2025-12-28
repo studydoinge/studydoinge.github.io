@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>现代前端开发：从HTML到React - SDE 学习资源</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .export-btn {
+                @apply inline-flex items-center bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-red-200 hover:scale-105 shadow-md;
+            }
+            .code-block {
+                @apply bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm my-4;
+            }
+            .note-box {
+                @apply bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 my-4;
+            }
+            .warning-box {
+                @apply bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500 my-4;
+            }
+            .loading-overlay {
+                @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+            }
+            .loading-spinner {
+                @apply w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin;
+            }
+            .audio-controls {
+                @apply bg-blue-50 p-4 rounded-lg flex items-center gap-4 mb-6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 文章主体 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- 主内容区 -->
+            <div class="lg:w-2/3">
+                <article class="bg-white rounded-xl shadow-md overflow-hidden" id="articleContent">
+                    <!-- 封面图 -->
+                    <img src="https://picsum.photos/id/160/1200/600" alt="现代前端开发" class="w-full h-64 md:h-96 object-cover">
+                    
+                    <!-- 文章工具栏 -->
+                    <div class="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-green-100 text-green-600 px-2 py-1 rounded-full text-sm">Web开发</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-calendar-o mr-1"></i> 2024-01-25</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> 25分钟阅读</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="exportPdfBtn" class="export-btn">
+                                <i class="fa fa-file-pdf-o mr-1"></i> 导出PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 音频朗读控件 -->
+                    <div class="audio-controls px-6">
+                        <button id="audioToggle" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors">
+                            <i class="fa fa-play"></i>
+                        </button>
+                        <div>
+                            <p class="font-medium">文章朗读</p>
+                            <p class="text-sm text-gray-600">点击播放按钮听取前端开发讲解</p>
+                        </div>
+                        <audio id="articleAudio" preload="none">
+                            <source src="./resource/AUDIO/web-dev.MP3" type="audio/mpeg">
+                            您的浏览器不支持音频播放
+                        
+                    </div>
+                    
+                    <!-- 核心内容 -->
+                    <div class="p-6">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">现代前端开发：从HTML到React</h1>
+                        
+                        <div class="text-gray-700 space-y-4">
+                            <p>前端开发是构建 Web 页面或应用的用户界面的过程，是连接用户与后端服务的桥梁。现代前端开发已经从单纯的 HTML+CSS+JavaScript 静态页面，发展为集组件化、工程化、跨端开发于一体的完整技术体系。本文将带你循序渐进，从前端基础到主流框架 React，系统掌握现代前端开发核心技能。</p>
+                            
+                            <!-- 第一部分：前端基础三剑客 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">一、前端基础核心：HTML + CSS + JavaScript</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">1.1 HTML：网页的骨架</h3>
+                            <p>HTML（HyperText Markup Language）超文本标记语言，是构建网页结构的基础，通过各类标签定义页面中的文本、图片、链接、表单等元素，<strong>无样式、无交互，仅负责结构呈现</strong>。</p>
+                            <div class="code-block">
+                                <!-- HTML5 基础页面结构 -->
+                                <!DOCTYPE html>
+                                <html lang="zh-CN">
+                                <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <title>HTML基础页面</title>
+                                </head>
+                                <body>
+                                    <header>
+                                        <h1>我的第一个网页</h1>
+                                        <nav><a href="#">首页</a> | <a href="#">关于</a></nav>
+                                    </header>
+                                    <main>
+                                        <section>
+                                            <h2>前端学习</h2>
+                                            <p>HTML是前端开发的基础</p>
+                                            <img src="logo.png" alt="前端logo">
+                                        </section>
+                                    </main>
+                                    <footer>版权所有 &copy; 2024</footer>
+                                </body>
+                                </html>
+                            </div>
+                            <div class="note-box">
+                                <p class="font-medium mb-1"><i class="fa fa-info-circle mr-1"></i> 开发规范</p>
+                                <p>推荐使用 HTML5 语义化标签（header、nav、main、section、footer），替代传统的 div 布局，提升页面可读性和SEO友好度。</p>
+                            </div>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">1.2 CSS：网页的皮肤</h3>
+                            <p>CSS（Cascading Style Sheets）层叠样式表，负责为HTML结构添加样式，控制元素的布局、颜色、字体、大小等视觉效果。从原生CSS到CSS3，再到预处理器和后处理器，CSS的能力不断升级。</p>
+                            <div class="code-block">
+                                /* 基础CSS样式 */
+                                body {
+                                    margin: 0;
+                                    padding: 0;
+                                    font-family: "Microsoft Yahei", sans-serif;
+                                    background: #f5f5f5;
+                                }
+                                h1 {
+                                    color: #165DFF;
+                                    text-align: center;
+                                    margin-top: 20px;
+                                }
+                                a {
+                                    color: #666;
+                                    text-decoration: none;
+                                    &:hover {
+                                        color: #165DFF;
+                                    }
+                                }
+                                /* CSS3 新特性 */
+                                .card {
+                                    width: 300px;
+                                    border-radius: 8px;
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                    transition: all 0.3s ease;
+                                    &:hover {
+                                        transform: translateY(-5px);
+                                    }
+                                }
+                            </div>
+                            <p>主流CSS进阶技术：</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li><strong>CSS预处理器</strong>：Sass/Scss、Less，支持变量、嵌套、混合器，简化CSS编写</li>
+                                <li><strong>CSS框架</strong>：TailwindCSS、Bootstrap、ElementUI，提供现成样式组件，提升开发效率</li>
+                                <li><strong>Flex/Grid布局</strong>：CSS3原生布局方案，完美解决传统浮动布局的痛点</li>
+                            </ul>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">1.3 JavaScript：网页的灵魂</h3>
+                            <p>JavaScript 是一门解释型、弱类型、面向对象的脚本语言，为网页添加<strong>交互逻辑和动态效果</strong>，是前端开发的核心编程语言。ES6（2015）的发布为JS带来了质的飞跃，新增了箭头函数、解构赋值、Promise、模块化等核心特性。</p>
+                            <div class="code-block">
+                                // ES5 基础语法
+                                function sum(a, b) {
+                                    return a + b;
+                                }
+                                console.log(sum(1,2)); // 3
+
+                                // ES6+ 新特性
+                                const sumEs6 = (a, b) => a + b;
+                                const [name, age] = ["张三", 20];
+                                const user = { name, age };
+
+                                // 异步编程
+                                const fetchData = async () => {
+                                    try {
+                                        const res = await fetch("https://api.example.com/data");
+                                        const data = await res.json();
+                                        console.log(data);
+                                    } catch (err) {
+                                        console.error(err);
+                                    }
+                                }
+                            </div>
+                            <div class="warning-box">
+                                <p class="font-medium mb-1"><i class="fa fa-exclamation-triangle mr-1"></i> 重点提醒</p>
+                                <p>JavaScript 是前端的核心，框架只是工具，<strong>学好原生JS是掌握所有前端框架的前提</strong>，切勿跳过原生直接学框架。</p>
+                            </div>
+
+                            <!-- 第二部分：前端工程化与工具链 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">二、前端工程化：从单兵作战到团队协作</h2>
+                            <p>随着前端项目复杂度提升，原生的 HTML/CSS/JS 开发模式已经无法满足需求，前端工程化应运而生。工程化的核心是通过一系列工具和规范，将前端开发流程标准化、自动化，解决模块化、兼容性、性能优化等问题。</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li><strong>包管理器</strong>：npm/yarn/pnpm，管理项目依赖包，实现依赖版本统一</li>
+                                <li><strong>构建工具</strong>：Vite、Webpack，打包压缩代码、处理模块化、编译ES6+语法</li>
+                                <li><strong>代码规范</strong>：ESLint（代码语法检查）、Prettier（代码格式化），保证团队代码风格统一</li>
+                                <li><strong>模块化标准</strong>：ES Module、CommonJS，实现代码解耦和复用</li>
+                            </ul>
+
+                            <div class="note-box">
+                                <p class="font-medium mb-1"><i class="fa fa-lightbulb-o mr-1"></i> 入门建议</p>
+                                <p>新手无需深入理解构建工具的底层原理，先学会使用 Vite 创建项目（<code>npm create vite@latest</code>），上手简单、启动速度快，是现阶段前端工程化的最佳入门方案。</p>
+                            </div>
+
+                            <!-- 第三部分：主流前端框架 - React 核心精讲 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">三、React：组件化前端开发的标杆</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">3.1 React 是什么？为什么学 React？</h3>
+                            <p>React 是由 Facebook 开发的一款<strong>声明式、组件化、跨平台</strong>的前端JavaScript库，专注于构建用户界面。React 不是完整的框架，而是专注于视图层的库，生态完善、灵活性高，是目前全球最流行的前端框架之一，也是大厂面试的高频考点。</p>
+                            <p>React 核心优势：</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li>组件化开发：将页面拆分为独立可复用的组件，一次编写、多处复用</li>
+                                <li>虚拟DOM：减少真实DOM操作，提升页面渲染性能</li>
+                                <li>单向数据流：数据流向清晰，便于调试和维护</li>
+                                <li>跨平台能力：React Native 开发移动端APP，React SSR 实现服务端渲染</li>
+                                <li>生态丰富：React Router（路由）、Redux（状态管理）、Ant Design（UI组件库）等成熟生态</li>
+                            </ul>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">3.2 React 核心基础：组件与JSX</h3>
+                            <p>JSX 是 React 的核心语法糖，是 JavaScript 的扩展语法，允许在JS中直接编写HTML结构，让代码更直观易懂。React 的核心是组件，分为<strong>函数组件</strong>（推荐）和类组件，函数组件是现阶段React开发的主流。</p>
+                            <div class="code-block">
+                                // React 函数组件 + JSX 基础示例
+                                import React from 'react'
+
+                                // 定义子组件
+                                const Card = ({ title, content }) => {
+                                    return (
+                                        <div className="card">
+                                            <h3>{title}</h3>
+                                            <p>{content}</p>
+                                        </div>
+                                    )
+                                }
+
+                                // 定义父组件
+                                const App = () => {
+                                    const name = "React学习";
+                                    const list = ["组件化", "JSX", "Hooks"];
+                                    return (
+                                        <div className="app">
+                                            <h1>欢迎学习 {name}</h1>
+                                            <Card title="React核心" content="组件化是React的核心思想" />
+                                            <ul>
+                                                {list.map((item, index) => (
+                                                    <li key={index}>{item}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )
+                                }
+
+                                export default App;
+                            </div>
+                            <p class="mt-2">核心注意点：JSX中class需写为className，for需写为htmlFor；标签必须闭合；可以通过{}嵌入JS表达式。</p>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">3.3 React Hooks：函数组件的灵魂</h3>
+                            <p>React 16.8 推出的 Hooks 是React的重大革新，解决了类组件的繁琐、复用性差等问题，让函数组件可以拥有状态、生命周期等能力，也是现阶段React开发的必备技能。常用的核心Hooks：</p>
+                            <div class="code-block">
+                                import React, { useState, useEffect } from 'react'
+
+                                const Counter = () => {
+                                    // useState: 定义组件状态，实现数据响应式
+                                    const [count, setCount] = useState(0);
+                                    const [msg, setMsg] = useState("计数器");
+
+                                    // useEffect: 处理副作用（请求、定时器、DOM操作等），替代类组件生命周期
+                                    useEffect(() => {
+                                        document.title = `点击了${count}次`;
+                                        // 清除副作用
+                                        return () => {
+                                            document.title = "React计数器";
+                                        }
+                                    }, [count]); // 依赖项：仅当count变化时执行
+
+                                    return (
+                                        <div>
+                                            <h2>{msg}</h2>
+                                            <p>当前计数：{count}</p>
+                                            <button onClick={() => setCount(count + 1)}>加1</button>
+                                            <button onClick={() => setCount(count - 1)}>减1</button>
+                                        </div>
+                                    )
+                                }
+
+                                export default Counter;
+                            </div>
+                            <p>高频常用Hooks：useState（状态）、useEffect（副作用）、useContext（跨组件传值）、useReducer（复杂状态管理）、useMemo/useCallback（性能优化）。</p>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">3.4 React 路由与状态管理</h3>
+                            <p>一个完整的React项目，除了核心的组件开发，还需要两个核心能力：路由和状态管理。</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li><strong>React Router</strong>：实现单页应用（SPA）的页面跳转和路由导航，核心是声明式路由配置，支持路由传参、嵌套路由、路由守卫。</li>
+                                <li><strong>状态管理</strong>：小型项目用useState+useContext即可，中大型项目推荐Redux Toolkit或Zustand，解决组件间数据共享和复杂状态逻辑的问题。</li>
+                            </ul>
+
+                            <!-- 第四部分：前端学习路径与职业发展 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">四、前端学习路径与进阶方向</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">4.1 零基础前端学习路线（循序渐进）</h3>
+                            <ol class="list-decimal pl-6 space-y-3 mb-4">
+                                <li><strong>入门阶段</strong>：HTML5 + CSS3 精通 → 原生JavaScript（ES6+）吃透 → 移动端适配（Rem、VW/VH、媒体查询）</li>
+                                <li><strong>进阶阶段</strong>：学习React核心 → 工程化工具（Vite）→ React生态（路由、状态管理）→ UI组件库（AntD、TailwindCSS）</li>
+                                <li><strong>实战阶段</strong>：做2-3个完整项目（TodoList、博客、电商首页）→ 学习接口请求（Axios）→ 前后端联调</li>
+                                <li><strong>高级阶段</strong>：性能优化、TypeScript、服务端渲染（Next.js）、跨端开发（React Native）</li>
+                            </ol>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">4.2 前端工程师的职业发展</h3>
+                            <p>前端开发的职业天花板很高，发展方向多样：</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li><strong>技术深耕</strong>：初级前端 → 中级前端 → 高级前端 → 前端架构师</li>
+                                <li><strong>全栈方向</strong>：学习Node.js+Express/Koa，成为前后端全栈工程师</li>
+                                <li><strong>跨端方向</strong>：React Native/uni-app 开发移动端APP，Electron 开发桌面应用</li>
+                                <li><strong>专项方向</strong>：可视化开发（ECharts、Three.js）、低代码平台开发、前端工程化专家</li>
+                            </ul>
+
+                            <!-- 第五部分：总结 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">五、总结</h2>
+                            <p>现代前端开发的技术栈虽然庞大，但核心逻辑始终不变：<strong>HTML做结构、CSS做样式、JavaScript做交互，框架做工程化和效率提升</strong>。React作为现阶段最主流的前端框架，是前端工程师的必备技能，但切勿本末倒置。</p>
+                            <p>学习前端的核心心法：<strong>基础扎实、多敲代码、多做项目、持续学习</strong>。前端技术更新快，但底层原理相通，学好基础，任何新框架和新工具都能快速上手。最后记住：前端的核心价值是做出用户体验好、性能优、兼容性强的产品，而不是堆砌技术。</p>
+                            <p class="mt-2">推荐学习资源：</p>
+                            <ul class="list-disc pl-6 space-y-2">
+                                <li>React官方文档：<a href="https://react.dev/" target="_blank" class="text-blue-500 hover:underline">https://react.dev/</a></li>
+                                <li>MDN前端文档：<a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" class="text-blue-500 hover:underline">https://developer.mozilla.org/zh-CN/docs/Web</a></li>
+                                <li>菜鸟教程：<a href="https://www.runoob.com/react/react-tutorial.html" target="_blank" class="text-blue-500 hover:underline">React 基础教程</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 文章底部 -->
+                        <div class="mt-10 pt-6 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4">相关推荐</h3>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="python-basics.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">Python 编程入门</a>
+                                <a href="dev-tools.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">前端开发工具推荐</a>
+                                <a href="database.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">前端与数据库交互实战</a>
+                            </div>
+                            <div class="mt-8 flex gap-4">
+                                <a href="articles.html" class="custom-btn"><i class="fa fa-arrow-left mr-2"></i> 返回文章列表</a>
+                                <a href="#" class="custom-btn bg-blue-500 text-white hover:bg-blue-600"><i class="fa fa-share mr-2"></i> 分享本文</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="lg:w-1/3">
+                <!-- 目录导航 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-24">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-list text-blue-500"></i> 本文目录</h4>
+                    <nav class="space-y-2 text-sm">
+                        <a href="#section1" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">一、前端基础核心：HTML + CSS + JavaScript</a>
+                        <a href="#section2" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">二、前端工程化：从单兵作战到团队协作</a>
+                        <a href="#section3" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">三、React：组件化前端开发的标杆</a>
+                        <a href="#section4" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">四、前端学习路径与职业发展</a>
+                        <a href="#section5" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">五、总结</a>
+                    </nav>
+                </div>
+
+                <!-- 热门文章 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-fire text-red-500"></i> 热门文章</h4>
+                    <div class="space-y-4">
+                        <a href="python-basics.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/0/200/200" alt="Python编程入门" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">Python 编程入门：从零到一的学习路径</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 1520次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="algorithms.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/180/200/200" alt="数据结构与算法" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">数据结构与算法：面试必备知识点</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 1250次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 导出加载提示 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在生成PDF文件...</div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa fa-code text-blue-400"></i> SDE 学习资源</h4>
+                    <p class="text-gray-400">为学生提供高质量的软件开发学习内容，助力技术成长</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">快速链接</h5>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="articles.html" class="text-gray-400 hover:text-white transition-colors">文章</a></li>
+                        <li><a href="resources.html" class="text-gray-400 hover:text-white transition-colors">资源</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition-colors">关于</a></li>
+                        <li><a href="help.html" class="text-gray-400 hover:text-white transition-colors">帮助</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">关注我们</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-600 transition-colors" title="B站">
+                            <i class="fa fa-play-circle"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-red-600 transition-colors" title="抖音">
+                            <i class="fa fa-music"></i>
+                        </a>
+                        <a href="mailto:contact@sde-study.com" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-green-600 transition-colors" title="电子邮件">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                    </div>
+                    <p class="mt-4 text-gray-400">联系我们: contact@sde-study.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                &copy; 2024 SDE 学习资源 | 学生专属学习平台
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+
+        // 音频播放功能
+        const audioToggle = document.getElementById('audioToggle');
+        const articleAudio = document.getElementById('articleAudio');
+        
+        audioToggle.addEventListener('click', function() {
+            if (articleAudio.paused) {
+                articleAudio.play()
+                    .then(() => {
+                        audioToggle.innerHTML = '<i class="fa fa-pause"></i>';
+                    })
+                    .catch(error => {
+                        console.error('音频播放失败:', error);
+                        alert('音频播放失败，请检查文件路径是否正确: ./resource/AUDIO/web-dev.MP3');
+                    });
+            } else {
+                articleAudio.pause();
+                audioToggle.innerHTML = '<i class="fa fa-play"></i>';
+            }
+        });
+
+        // PDF导出功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const { jsPDF } = window.jspdf;
+            const exportBtn = document.getElementById('exportPdfBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const articleContent = document.getElementById('articleContent');
+            const articleTitle = document.querySelector('h1').textContent || '现代前端开发';
+            
+            exportBtn.addEventListener('click', async function() {
+                try {
+                    loadingOverlay.classList.remove('hidden');
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 处理中...';
+                    
+                    await generatePDFWithHtml2Canvas();
+                    alert('PDF导出成功！文件已保存到下载目录。');
+                } catch (error) {
+                    console.error('PDF导出失败:', error);
+                    alert('PDF导出失败: ' + error.message);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = '<i class="fa fa-file-pdf-o mr-1"></i> 导出PDF';
+                }
+            });
+            
+            async function generatePDFWithHtml2Canvas() {
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const content = document.querySelector('#articleContent .p-6');
+                const clonedContent = content.cloneNode(true);
+                
+                // 移除不需要导出的元素
+                const unwantedElements = clonedContent.querySelectorAll('a, button, .audio-controls');
+                unwantedElements.forEach(el => el.remove());
+                
+                // 隐藏克隆元素
+                clonedContent.style.position = 'absolute';
+                clonedContent.style.top = '-9999px';
+                clonedContent.style.left = '-9999px';
+                clonedContent.style.width = content.offsetWidth + 'px';
+                document.body.appendChild(clonedContent);
+                
+                try {
+                    const canvas = await html2canvas(clonedContent, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    
+                    pdf.save(`${articleTitle}.pdf`);
+                } finally {
+                    document.body.removeChild(clonedContent);
+                }
+            }
+        });
+
+        // 目录锚点跳转（补充id）
+        document.querySelectorAll('h2').forEach(heading => {
+            if (heading.textContent.includes('一、前端基础核心')) heading.id = 'section1';
+            if (heading.textContent.includes('二、前端工程化')) heading.id = 'section2';
+            if (heading.textContent.includes('三、React：组件化前端开发的标杆')) heading.id = 'section3';
+            if (heading.textContent.includes('四、前端学习路径')) heading.id = 'section4';
+            if (heading.textContent.includes('五、总结')) heading.id = 'section5';
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

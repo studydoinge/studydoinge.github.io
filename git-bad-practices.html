@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开发避坑指南：使用Git时的那些"缺德行为" - SDE 学习资源</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        },
+                        danger: {
+                            light: '#FEE2E2',
+                            DEFAULT: '#DC2626',
+                            dark: '#B91C1C'
+                        },
+                        warning: {
+                            light: '#FEF3C7',
+                            DEFAULT: '#D97706',
+                            dark: '#B45309'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .export-btn {
+                @apply inline-flex items-center bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-red-200 hover:scale-105 shadow-md;
+            }
+            .code-block {
+                @apply bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm my-4;
+            }
+            .note-box {
+                @apply bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 my-4;
+            }
+            .warning-box {
+                @apply bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500 my-4;
+            }
+            .danger-box {
+                @apply bg-danger-light p-4 rounded-lg border-l-4 border-danger my-4;
+            }
+            .bad-practice-card {
+                @apply bg-white rounded-lg border border-danger/20 p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1;
+            }
+            .good-practice-card {
+                @apply bg-white rounded-lg border border-green-200 p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1;
+            }
+            .loading-overlay {
+                @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+            }
+            .loading-spinner {
+                @apply w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin;
+            }
+            .audio-controls {
+                @apply bg-blue-50 p-4 rounded-lg flex items-center gap-4 mb-6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 文章主体 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- 主内容区 -->
+            <div class="lg:w-2/3">
+                <article class="bg-white rounded-xl shadow-md overflow-hidden" id="articleContent">
+                    <!-- 封面图 -->
+                    <img src="https://picsum.photos/id/180/1200/600" alt="Git缺德行为" class="w-full h-64 md:h-96 object-cover">
+                    
+                    <!-- 文章工具栏 -->
+                    <div class="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-danger/10 text-danger px-2 py-1 rounded-full text-sm">Git避坑</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-calendar-o mr-1"></i> 2024-03-05</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> 25分钟阅读</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="exportPdfBtn" class="export-btn">
+                                <i class="fa fa-file-pdf-o mr-1"></i> 导出PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 音频朗读控件 -->
+                    <div class="audio-controls px-6">
+                        <button id="audioToggle" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors">
+                            <i class="fa fa-play"></i>
+                        </button>
+                        <div>
+                            <p class="font-medium">文章朗读</p>
+                            <p class="text-sm text-gray-600">点击播放按钮听取Git避坑指南讲解</p>
+                        </div>
+                        <audio id="articleAudio" preload="none">
+                            <source src="./resource/AUDIO/git-bad-practices.MP3" type="audio/mpeg">
+                            您的浏览器不支持音频播放
+                        </audio>
+                    </div>
+                    
+                    <!-- 核心内容 -->
+                    <div class="p-6">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">开发避坑指南：使用Git时的那些"缺德行为"</h1>
+                        
+                        <div class="text-gray-700 space-y-4">
+                            <p>Git作为现代软件开发的标配工具，极大提升了团队协作效率，但<code class="bg-gray-100 px-1 py-0.5 rounded">错误的使用方式</code>往往会给团队带来灾难性后果。有些Git操作看似方便，实则是"缺德行为"——不仅坑自己，更坑队友。本文盘点了开发者在使用Git时最常见的不良习惯和危险操作，并给出对应的<code class="bg-green-100 px-1 py-0.5 rounded">正确做法</code>，帮助你规范Git使用，避免成为团队里的"Git杀手"。</p>
+                            <p>记住：<strong>Git是把双刃剑，用得好提升效率，用不好制造灾难</strong>。</p>
+
+                            <!-- 警告提示 -->
+                            <div class="danger-box">
+                                <p class="font-medium mb-1"><i class="fa fa-exclamation-circle mr-1 text-danger"></i> 特别提醒</p>
+                                <p>本文可能导致你的血压升高，如果你是新手务必阅读本文，高血压心脏病患者请在有人看护下阅读因为阅读本文造成的发病作者并不负责以下行为均为真实场景中频繁出现的"坑队友操作"，轻则导致代码冲突、丢失，重则需要花费数小时甚至数天修复，严重影响团队开发进度。</p>
+                            </div>
+
+                            <!-- 第一部分：提交相关的缺德行为 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section1">一、提交相关：最容易踩的坑</h2>
+
+                            <div class="grid grid-cols-1 gap-6 my-6">
+                                <!-- 行为1：直接修改主分支 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-danger/10 flex items-center justify-center">
+                                            <i class="fa fa-ban text-2xl text-danger"></i>
+                                        </div>
+                                        <h3 class="font-bold text-lg">缺德行为①：直接在主分支（main/master）开发</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-3">
+                                        直接在主分支写代码、提交、推送，不创建feature分支，导致主分支代码混乱，随时可能引入bug，影响整个团队。
+                                    </p>
+                                    <div class="code-block text-xs mb-3 bg-danger/5 text-danger">
+# 错误操作
+git checkout main
+# 直接在main分支写代码
+git add . && git commit -m "add xxx feature"
+git push origin main
+                                    </div>
+                                    
+                                    <div class="bg-green-50 p-3 rounded-lg mb-3">
+                                        <h4 class="font-medium text-sm text-green-700 mb-1">✅ 正确做法</h4>
+                                        <p class="text-xs text-gray-600">
+                                            所有功能开发、bug修复都在独立分支进行，通过PR/MR合并到主分支：
+                                        </p>
+                                        <div class="code-block text-xs mt-2 bg-gray-800">
+# 创建功能分支
+git checkout -b feature/user-login
+# 在分支开发完成后
+git push origin feature/user-login
+# 通过PR/MR合并到主分支（需代码评审）
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 行为2：提交信息敷衍了事 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-danger/10 flex items-center justify-center">
+                                            <i class="fa fa-comment-o text-2xl text-danger"></i>
+                                        </div>
+                                        <h3 class="font-bold text-lg">缺德行为②：提交信息敷衍了事</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-3">
+                                        使用"fix bug"、"update"、"修改代码"等无意义的提交信息，导致后续无法追溯代码变更原因，排查问题时无从下手。
+                                    </p>
+                                    <div class="code-block text-xs mb-3 bg-danger/5 text-danger">
+# 错误的提交信息
+git commit -m "改了点东西"
+git commit -m "修复问题"
+git commit -m "更新代码"
+                                    </div>
+                                    
+                                    <div class="bg-green-50 p-3 rounded-lg mb-3">
+                                        <h4 class="font-medium text-sm text-green-700 mb-1">✅ 正确做法</h4>
+                                        <p class="text-xs text-gray-600">
+                                            遵循Conventional Commits规范，提交信息清晰明了，包含类型、范围、描述：
+                                        </p>
+                                        <div class="code-block text-xs mt-2 bg-gray-800">
+# 规范的提交信息
+git commit -m "feat(login): 添加验证码登录功能"
+git commit -m "fix(order): 修复订单金额计算错误"
+git commit -m "docs(api): 更新接口文档说明"
+git commit -m "refactor(user): 重构用户信息处理逻辑"
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 行为3：大杂烩提交 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-danger/10 flex items-center justify-center">
+                                            <i class="fa fa-files-o text-2xl text-danger"></i>
+                                        </div>
+                                        <h3 class="font-bold text-lg">缺德行为③：一次提交多个无关修改</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-3">
+                                        把多个功能、多个bug修复混在一个提交里，甚至包含格式化、注释修改，导致代码评审困难，出问题时无法精准回滚。
+                                    </p>
+                                    <div class="code-block text-xs mb-3 bg-danger/5 text-danger">
+# 错误操作 - 一次提交所有修改
+git add .  # 添加所有文件
+git commit -m "添加支付功能+修复首页bug+格式化代码"
+                                    </div>
+                                    
+                                    <div class="bg-green-50 p-3 rounded-lg mb-3">
+                                        <h4 class="font-medium text-sm text-green-700 mb-1">✅ 正确做法</h4>
+                                        <p class="text-xs text-gray-600">
+                                            一个提交只做一件事，拆分相关修改为多个原子提交：
+                                        </p>
+                                        <div class="code-block text-xs mt-2 bg-gray-800">
+# 分步提交
+git add src/payment/  # 只添加支付相关文件
+git commit -m "feat(payment): 添加支付功能"
+
+git add src/home/     # 只添加首页bug修复
+git commit -m "fix(home): 修复首页加载慢问题"
+
+git add src/utils/    # 只添加格式化相关
+git commit -m "style: 格式化工具函数代码"
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 行为4：提交敏感信息 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-danger/10 flex items-center justify-center">
+                                            <i class="fa fa-lock text-2xl text-danger"></i>
+                                        </div>
+                                        <h3 class="font-bold text-lg">缺德行为④：提交敏感信息到仓库</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-3">
+                                        把密码、密钥、Token、数据库连接信息、个人信息等敏感内容提交到Git仓库（尤其是公共仓库），导致信息泄露，安全风险极高。
+                                    </p>
+                                    <div class="code-block text-xs mb-3 bg-danger/5 text-danger">
+# 错误操作 - 提交包含密钥的配置文件
+git add config/application.yml  # 包含数据库密码
+git add .env                    # 包含API密钥
+git commit -m "添加配置文件"
+git push origin feature/xxx
+                                    </div>
+                                    
+                                    <div class="bg-green-50 p-3 rounded-lg mb-3">
+                                        <h4 class="font-medium text-sm text-green-700 mb-1">✅ 正确做法</h4>
+                                        <p class="text-xs text-gray-600">
+                                            1. 使用.gitignore忽略敏感文件；<br>
+                                            2. 使用环境变量或配置中心管理敏感信息；<br>
+                                            3. 提交配置模板，不包含真实值；
+                                        </p>
+                                        <div class="code-block text-xs mt-2 bg-gray-800">
+# .gitignore文件配置
+.env
+config/application.yml
+*.pem
+*.key
+
+# 提交配置模板
+git add config/application.example.yml  # 只提交示例配置
+git commit -m "docs: 添加配置文件示例"
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第二部分：分支操作相关的缺德行为 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section2">二、分支操作：最容易坑队友的行为</h2>
+
+                            <div class="grid grid-cols-1 gap-6 my-6">
+                                <!-- 行为1：强制推送覆盖远程 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-danger/10 flex items-center justify-center">
+                                            <i class="fa fa-upload text-2xl text-danger"></i>
+                                        </div>
+                                        <h3 class="font-bold text-lg">缺德行为①：强制推送（git push -f）覆盖远程分支</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-3">
+                                        在多人协作的分支上使用git push -f，覆盖远程分支的提交记录，导致队友的代码丢失，尤其是在主分支上强制推送，后果不堪设想。
+                                    </p>
+                                    <div class="code-block text-xs mb-3 bg-danger/5 text-danger">
+# 错误操作 - 强制推送
+git reset --hard HEAD~3  # 回滚本地提交
+git push -f origin main  # 强制推送到远程主分支！！！
+                                    </div>
+                                    
+                                    <div class="bg-green-50 p-3 rounded-lg mb-3">
+                                        <h4 class="font-medium text-sm text-green-700 mb-1">✅ 正确做法</h4>
+                                        <p class="text-xs text-gray-600">
+                                            1. 禁止在共享分支（尤其是主分支）使用强制推送；<br>
+                                            2. 如需修改提交历史，仅在自己的功能分支操作；<br>
+                                            3. 团队协作分支优先使用git revert而非git reset：
+                                        </p>
+                                        <div class="code-block text-xs mt-2 bg-gray-800">
+# 正确的回滚方式 - 保留提交历史
+git revert HEAD~1  # 创建新提交撤销上一次修改
+git push origin feature/xxx
+
+# 如需修改自己的提交（仅个人分支）
+git commit --amend  # 修改最后一次提交
+git push -f origin my-private-branch  # 仅限个人分支！
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 行为2：不更新本地分支直接开发 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-danger/10 flex items-center justify-center">
+                                            <i class="fa fa-refresh text-2xl text-danger"></i>
+                                        </div>
+                                        <h3 class="font-bold text-lg">缺德行为②：长期不更新本地分支，直接开发</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-3">
+                                        基于过时的代码开发新功能，开发完成后才发现远程分支已经有大量更新，导致合并时出现大量冲突，解决冲突耗时耗力。
+                                    </p>
+                                    <div class="code-block text-xs mb-3 bg-danger/5 text-danger">
+# 错误操作
+git checkout feature/xxx  # 基于一周前的代码
+# 开发3天...
+git add . && git commit -m "完成功能"
+git pull origin main      # 此时才拉取最新代码，大量冲突
+                                    </div>
+                                    
+                                    <div class="bg-green-50 p-3 rounded-lg mb-3">
+                                        <h4 class="font-medium text-sm text-green-700 mb-1">✅ 正确做法</h4>
+                                        <p class="text-xs text-gray-600">
+                                            1. 每天开发前先拉取主分支最新代码；<br>
+                                            2. 开发过程中定期同步主分支更新；<br>
+                                            3. 提前解决冲突，避免最后集中爆发：
+                                        </p>
+                                        <div class="code-block text-xs mt-2 bg-gray-800">
+# 日常开发流程
+git checkout main
+git pull origin main      # 更新主分支
+git checkout feature/xxx
+git merge main            # 合并主分支最新代码
+# 解决冲突后再开发
+# 开发过程中定期同步
+git fetch origin
+git merge origin/main
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 行为3：删除共享分支 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-danger/10 flex items-center justify-center">
+                                            <i class="fa fa-trash text-2xl text-danger"></i>
+                                        </div>
+                                        <h3 class="font-bold text-lg">缺德行为③：随意删除远程共享分支</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-3">
+                                        未经团队确认，删除远程的开发分支、测试分支，导致队友无法继续工作，甚至丢失未合并的代码。
+                                    </p>
+                                    <div class="code-block text-xs mb-3 bg-danger/5 text-danger">
+# 错误操作 - 随意删除远程分支
+git push origin --delete develop  # 删除开发分支
+git push origin --delete feature/common  # 删除共享功能分支
+                                    </div>
+                                    
+                                    <div class="bg-green-50 p-3 rounded-lg mb-3">
+                                        <h4 class="font-medium text-sm text-green-700 mb-1">✅ 正确做法</h4>
+                                        <p class="text-xs text-gray-600">
+                                            1. 分支删除需团队确认，确保代码已合并且无人使用；<br>
+                                            2. 建立分支管理规范，定期清理过时分支；<br>
+                                            3. 删除前先备份：
+                                        </p>
+                                        <div class="code-block text-xs mt-2 bg-gray-800">
+# 分支删除流程
+# 1. 确认分支已合并
+git checkout main
+git merge --no-ff feature/xxx
+
+# 2. 团队确认后删除
+# 先在本地删除
+git branch -d feature/xxx
+# 再删除远程（仅限确认废弃的分支）
+git push origin --delete feature/xxx
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第三部分：其他常见的缺德行为 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section3">三、其他操作：容易被忽视的坑</h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+                                <!-- 行为1：忽略.gitignore -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <i class="fa fa-times-circle text-xl text-danger"></i>
+                                        <h3 class="font-bold text-sm">缺德行为①：提交编译产物/依赖包</h3>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mb-2">
+                                        提交node_modules、dist、build等编译产物和依赖包，导致仓库体积暴增，克隆速度变慢。
+                                    </p>
+                                    <div class="bg-green-50 p-2 rounded-lg text-xs">
+                                        ✅ 正确做法：配置.gitignore忽略这些文件，使用包管理工具安装依赖
+                                    </div>
+                                </div>
+
+                                <!-- 行为2：频繁撤销推送的提交 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <i class="fa fa-undo text-xl text-danger"></i>
+                                        <h3 class="font-bold text-sm">缺德行为②：频繁撤销已推送的提交</h3>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mb-2">
+                                        推送代码后发现问题，直接reset回滚并强制推送，导致CI/CD流程中断，队友拉取代码出错。
+                                    </p>
+                                    <div class="bg-green-50 p-2 rounded-lg text-xs">
+                                        ✅ 正确做法：使用revert创建撤销提交，保留历史记录
+                                    </div>
+                                </div>
+
+                                <!-- 行为3：代码评审前强行合并 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <i class="fa fa-gavel text-xl text-danger"></i>
+                                        <h3 class="font-bold text-sm">缺德行为③：跳过代码评审直接合并</h3>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mb-2">
+                                        不经过代码评审，强行将自己的分支合并到主分支，引入bug和代码质量问题。
+                                    </p>
+                                    <div class="bg-green-50 p-2 rounded-lg text-xs">
+                                        ✅ 正确做法：严格执行PR/MR评审流程，至少1人审核通过后再合并
+                                    </div>
+                                </div>
+
+                                <!-- 行为4：本地修改未提交就切换分支 -->
+                                <div class="bad-practice-card">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <i class="fa fa-exchange text-xl text-danger"></i>
+                                        <h3 class="font-bold text-sm">缺德行为④：本地修改未提交就切换分支</h3>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mb-2">
+                                        本地有未提交的修改，直接切换分支，导致修改被带到其他分支，甚至触发自动合并，污染其他分支代码。
+                                    </p>
+                                    <div class="bg-green-50 p-2 rounded-lg text-xs">
+                                        ✅ 正确做法：提交修改、暂存修改（git stash）或放弃修改后再切换分支
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第四部分：Git使用规范建议 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section4">四、团队Git使用规范建议</h2>
+
+                            <div class="good-practice-card my-6">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
+                                        <i class="fa fa-check-circle text-2xl text-green-600"></i>
+                                    </div>
+                                    <h3 class="font-bold text-lg">团队协作Git规范</h3>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <h4 class="font-medium text-sm mb-2 text-green-700">📋 分支管理规范</h4>
+                                        <ul class="list-disc pl-5 text-sm space-y-1 text-gray-600">
+                                            <li>main/master：生产环境分支，仅通过PR/MR合并</li>
+                                            <li>develop：开发环境分支，日常开发基于此分支</li>
+                                            <li>feature/xxx：功能开发分支，从develop创建</li>
+                                            <li>bugfix/xxx：bug修复分支，从对应分支创建</li>
+                                            <li>release/xxx：发布分支，用于测试和发布准备</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-sm mb-2 text-green-700">📝 提交规范</h4>
+                                        <ul class="list-disc pl-5 text-sm space-y-1 text-gray-600">
+                                            <li>类型：feat/fix/docs/style/refactor/test/chore</li>
+                                            <li>格式：类型(范围)：描述</li>
+                                            <li>长度：标题不超过50字符，详细描述换行</li>
+                                            <li>语言：统一使用中文或英文，避免混用</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h4 class="font-medium text-sm mb-2 text-green-700">🚫 禁止操作</h4>
+                                        <ul class="list-disc pl-5 text-sm space-y-1 text-gray-600">
+                                            <li>禁止直接修改主分支代码</li>
+                                            <li>禁止在共享分支强制推送</li>
+                                            <li>禁止提交敏感信息</li>
+                                            <li>禁止跳过代码评审合并</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-sm mb-2 text-green-700">✅ 推荐实践</h4>
+                                        <ul class="list-disc pl-5 text-sm space-y-1 text-gray-600">
+                                            <li>每天同步远程最新代码</li>
+                                            <li>小步提交，频繁推送</li>
+                                            <li>使用git revert而非reset撤销推送的提交</li>
+                                            <li>定期清理本地和远程过时分支</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 总结 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">五、总结</h2>
+                            <p>Git的"缺德行为"本质上都是<code class="bg-gray-100 px-1 py-0.5 rounded">缺乏团队协作意识</code>和<code class="bg-gray-100 px-1 py-0.5 rounded">不规范操作</code>导致的。作为开发者，不仅要掌握Git的基本操作，更要理解每个操作背后的影响，尤其是在团队协作场景下。</p>
+                            <p>记住：<strong>你的每一次Git操作都可能影响整个团队</strong>。遵守Git使用规范，养成良好的使用习惯，不仅能提升自己的开发效率，更能避免给队友制造麻烦，这是作为团队一员最基本的职业素养。</p>
+                            <p>如果不小心犯了上述错误，及时和团队沟通，共同寻找解决方案，远比隐瞒和逃避更重要。</p>
+                        </div>
+                        
+                        <!-- 文章底部 -->
+                        <div class="mt-10 pt-6 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4">相关推荐</h3>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="dev-tools.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">开发者必备工具：提升效率的神器</a>
+                                <a href="system-design.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">系统设计入门：从需求到架构</a>
+                                <a href="algorithms.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">数据结构与算法：面试必备知识点</a>
+                            </div>
+                            <div class="mt-8 flex gap-4">
+                                <a href="articles.html" class="custom-btn"><i class="fa fa-arrow-left mr-2"></i> 返回文章列表</a>
+                                <a href="#" class="custom-btn bg-blue-500 text-white hover:bg-blue-600"><i class="fa fa-share mr-2"></i> 分享本文</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="lg:w-1/3">
+                <!-- 目录导航 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-24">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-list text-blue-500"></i> 本文目录</h4>
+                    <nav class="space-y-2 text-sm">
+                        <a href="#section1" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">一、提交相关：最容易踩的坑</a>
+                        <a href="#section2" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">二、分支操作：最容易坑队友的行为</a>
+                        <a href="#section3" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">三、其他操作：容易被忽视的坑</a>
+                        <a href="#section4" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">四、团队Git使用规范建议</a>
+                    </nav>
+                </div>
+
+                <!-- 避坑速查表 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-table text-yellow-500"></i> Git避坑速查表</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-danger/5 rounded-lg">
+                            <span class="text-sm font-medium text-danger">❌ 禁止操作</span>
+                            <span class="text-xs text-gray-600">git push -f main</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-danger/5 rounded-lg">
+                            <span class="text-sm font-medium text-danger">❌ 禁止操作</span>
+                            <span class="text-xs text-gray-600">直接提交敏感信息</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-danger/5 rounded-lg">
+                            <span class="text-sm font-medium text-danger">❌ 禁止操作</span>
+                            <span class="text-xs text-gray-600">main分支直接开发</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-green-700">✅ 推荐操作</span>
+                            <span class="text-xs text-gray-600">feature分支开发</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-green-700">✅ 推荐操作</span>
+                            <span class="text-xs text-gray-600">git revert 撤销提交</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-green-700">✅ 推荐操作</span>
+                            <span class="text-xs text-gray-600">规范的提交信息</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 热门文章 -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-fire text-red-500"></i> 热门文章</h4>
+                    <div class="space-y-4">
+                        <a href="dev-tools.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/4/200/200" alt="开发者必备工具" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">开发者必备工具：提升效率的神器</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 1650次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="database.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/119/200/200" alt="SQL基础到进阶" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">SQL基础到进阶：数据库查询技巧</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 1380次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 导出加载提示 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto"></div>
+            <div class="loading-text text-white mt-4">正在生成PDF文件...</div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa fa-code text-blue-400"></i> SDE 学习资源</h4>
+                    <p class="text-gray-400">为学生提供高质量的软件开发学习内容，助力技术成长</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">快速链接</h5>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="articles.html" class="text-gray-400 hover:text-white transition-colors">文章</a></li>
+                        <li><a href="resources.html" class="text-gray-400 hover:text-white transition-colors">资源</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition-colors">关于</a></li>
+                        <li><a href="help.html" class="text-gray-400 hover:text-white transition-colors">帮助</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">关注我们</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-600 transition-colors" title="B站">
+                            <i class="fa fa-play-circle"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-red-600 transition-colors" title="抖音">
+                            <i class="fa fa-music"></i>
+                        </a>
+                        <a href="mailto:contact@sde-study.com" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-green-600 transition-colors" title="电子邮件">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                    </div>
+                    <p class="mt-4 text-gray-400">联系我们: contact@sde-study.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                &copy; 2024 SDE 学习资源 | 学生专属学习平台
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+
+        // 音频播放功能
+        const audioToggle = document.getElementById('audioToggle');
+        const articleAudio = document.getElementById('articleAudio');
+        
+        audioToggle.addEventListener('click', function() {
+            if (articleAudio.paused) {
+                articleAudio.play()
+                    .then(() => {
+                        audioToggle.innerHTML = '<i class="fa fa-pause"></i>';
+                    })
+                    .catch(error => {
+                        console.error('音频播放失败:', error);
+                        alert('音频播放失败，请检查文件路径是否正确: ./resource/AUDIO/git-bad-practices.MP3');
+                    });
+            } else {
+                articleAudio.pause();
+                audioToggle.innerHTML = '<i class="fa fa-play"></i>';
+            }
+        });
+
+        // PDF导出功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const { jsPDF } = window.jspdf;
+            const exportBtn = document.getElementById('exportPdfBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const articleContent = document.getElementById('articleContent');
+            const articleTitle = document.querySelector('h1').textContent || 'Git缺德行为避坑指南';
+            
+            exportBtn.addEventListener('click', async function() {
+                try {
+                    loadingOverlay.classList.remove('hidden');
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 处理中...';
+                    
+                    await generatePDFWithHtml2Canvas();
+                    alert('PDF导出成功！文件已保存到下载目录。');
+                } catch (error) {
+                    console.error('PDF导出失败:', error);
+                    alert('PDF导出失败: ' + error.message);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = '<i class="fa fa-file-pdf-o mr-1"></i> 导出PDF';
+                }
+            });
+            
+            async function generatePDFWithHtml2Canvas() {
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const content = document.querySelector('#articleContent .p-6');
+                const clonedContent = content.cloneNode(true);
+                
+                // 移除不需要导出的元素
+                const unwantedElements = clonedContent.querySelectorAll('a, button, .audio-controls');
+                unwantedElements.forEach(el => el.remove());
+                
+                // 隐藏克隆元素
+                clonedContent.style.position = 'absolute';
+                clonedContent.style.top = '-9999px';
+                clonedContent.style.left = '-9999px';
+                clonedContent.style.width = content.offsetWidth + 'px';
+                document.body.appendChild(clonedContent);
+                
+                try {
+                    const canvas = await html2canvas(clonedContent, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    
+                    pdf.save(`${articleTitle}.pdf`);
+                } finally {
+                    document.body.removeChild(clonedContent);
+                }
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

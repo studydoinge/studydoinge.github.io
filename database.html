@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL基础到进阶：数据库查询技巧 - SDE 学习资源</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .export-btn {
+                @apply inline-flex items-center bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-red-200 hover:scale-105 shadow-md;
+            }
+            .code-block {
+                @apply bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm my-4;
+            }
+            .note-box {
+                @apply bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 my-4;
+            }
+            .warning-box {
+                @apply bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500 my-4;
+            }
+            .sql-table {
+                @apply w-full border-collapse my-4;
+            }
+            .sql-table th, .sql-table td {
+                @apply border border-gray-200 px-3 py-2 text-sm;
+            }
+            .sql-table th {
+                @apply bg-gray-50 font-medium;
+            }
+            .loading-overlay {
+                @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+            }
+            .loading-spinner {
+                @apply w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin;
+            }
+            .audio-controls {
+                @apply bg-blue-50 p-4 rounded-lg flex items-center gap-4 mb-6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 文章主体 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- 主内容区 -->
+            <div class="lg:w-2/3">
+                <article class="bg-white rounded-xl shadow-md overflow-hidden" id="articleContent">
+                    <!-- 封面图 -->
+                    <img src="https://picsum.photos/id/119/1200/600" alt="SQL基础到进阶" class="w-full h-64 md:h-96 object-cover">
+                    
+                    <!-- 文章工具栏 -->
+                    <div class="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full text-sm">数据库</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-calendar-o mr-1"></i> 2024-02-01</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> 22分钟阅读</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="exportPdfBtn" class="export-btn">
+                                <i class="fa fa-file-pdf-o mr-1"></i> 导出PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 音频朗读控件 -->
+                    <div class="audio-controls px-6">
+                        <button id="audioToggle" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors">
+                            <i class="fa fa-play"></i>
+                        </button>
+                        <div>
+                            <p class="font-medium">文章朗读</p>
+                            <p class="text-sm text-gray-600">点击播放按钮听取SQL查询技巧讲解</p>
+                        </div>
+                        <audio id="articleAudio" preload="none">
+                            <source src="./resource/AUDIO/database.MP3" type="audio/mpeg">
+                            您的浏览器不支持音频播放
+                        
+                    </div>
+                    
+                    <!-- 核心内容 -->
+                    <div class="p-6">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">SQL基础到进阶：数据库查询技巧</h1>
+                        
+                        <div class="text-gray-700 space-y-4">
+                            <p>数据库是软件开发的核心基础设施之一，负责存储、管理和处理业务数据。SQL（Structured Query Language）结构化查询语言，是操作关系型数据库的标准语言，<strong>所有关系型数据库（MySQL、Oracle、SQL Server、PostgreSQL）都通用</strong>。无论是前端、后端还是大数据开发，掌握SQL都是必备技能，也是面试中的高频考点。本文将从SQL基础语法到进阶查询技巧，系统讲解SQL的核心知识点和实战用法。</p>
+                            <p>本文所有示例均基于 MySQL 8.0，语法兼容绝大多数关系型数据库，核心逻辑通用。</p>
+
+                            <!-- 前置准备：示例数据表 -->
+                            <div class="note-box">
+                                <p class="font-medium mb-1"><i class="fa fa-info-circle mr-1"></i> 示例数据表</p>
+                                <p>本文所有SQL示例均基于以下两张核心数据表，方便大家对照练习：</p>
+                                <p class="mt-2 font-medium">1. student(学生表)</p>
+                                <table class="sql-table">
+                                    <thead><tr><th>id</th><th>name</th><th>age</th><th>gender</th><th>class_id</th><th>score</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>1</td><td>张三</td><td>18</td><td>男</td><td>1</td><td>92</td></tr>
+                                        <tr><td>2</td><td>李四</td><td>17</td><td>女</td><td>1</td><td>88</td></tr>
+                                        <tr><td>3</td><td>王五</td><td>18</td><td>男</td><td>2</td><td>75</td></tr>
+                                        <tr><td>4</td><td>赵六</td><td>17</td><td>女</td><td>2</td><td>95</td></tr>
+                                    </tbody>
+                                </table>
+                                <p class="mt-2 font-medium">2. class(班级表)</p>
+                                <table class="sql-table">
+                                    <thead><tr><th>class_id</th><th>class_name</th><th>teacher</th><th>grade</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>1</td><td>软件工程1班</td><td>张老师</td><td>大一</td></tr>
+                                        <tr><td>2</td><td>计算机科学2班</td><td>李老师</td><td>大一</td></tr>
+                                        <tr><td>3</td><td>大数据3班</td><td>王老师</td><td>大二</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- 第一部分：SQL基础核心语法 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">一、SQL基础查询：必会核心语法</h2>
+                            <p>SQL语句分为四大类：<strong>查询语句(SELECT)、新增语句(INSERT)、更新语句(UPDATE)、删除语句(DELETE)</strong>，其中查询语句是最核心、最常用、也是考点最多的部分，占实际开发中SQL使用的80%以上。</p>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">1.1 基础SELECT查询：查询数据</h3>
+                            <p>SELECT 是SQL的核心，用于从数据表中查询指定数据，语法灵活、功能强大，基础语法格式：<code class="bg-gray-100 px-1 py-0.5 rounded">SELECT 字段 FROM 表名 [WHERE 条件] [ORDER BY 字段] [LIMIT 条数]</code></p>
+                            <div class="code-block">
+                                -- 1. 查询所有字段
+                                SELECT * FROM student;
+
+                                -- 2. 查询指定字段
+                                SELECT name, age, score FROM student;
+
+                                -- 3. 别名查询（字段别名/表别名），as可以省略
+                                SELECT name AS 姓名, age AS 年龄, score 成绩 FROM student s;
+
+                                -- 4. 去重查询：DISTINCT
+                                SELECT DISTINCT gender FROM student;
+
+                                -- 5. 带条件查询：WHERE + 条件运算符(=, >, <, >=, <=, !=, AND, OR, NOT)
+                                SELECT name, score FROM student WHERE score >= 90 AND gender = '女';
+
+                                -- 6. 模糊查询：LIKE (%匹配任意字符，_匹配单个字符)
+                                SELECT name FROM student WHERE name LIKE '张%'; -- 姓张的学生
+                                SELECT name FROM student WHERE name LIKE '_三'; -- 第二个字是三的学生
+
+                                -- 7. 范围查询：IN / BETWEEN ... AND ...
+                                SELECT name, score FROM student WHERE score BETWEEN 80 AND 90;
+                                SELECT name FROM student WHERE class_id IN (1,3);
+
+                                -- 8. 排序查询：ORDER BY (ASC升序 默认，DESC降序)
+                                SELECT name, score FROM student ORDER BY score DESC;
+
+                                -- 9. 分页查询：LIMIT (MySQL) / ROWNUM (Oracle)，开发必备！
+                                SELECT name, score FROM student ORDER BY score DESC LIMIT 0,2; -- 第1页，每页2条
+                            </div>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">1.2 聚合函数与分组查询</h3>
+                            <p>聚合函数是SQL的核心功能之一，用于对数据进行统计分析，<strong>常用聚合函数：COUNT(计数)、SUM(求和)、AVG(平均值)、MAX(最大值)、MIN(最小值)</strong>，聚合函数常与 GROUP BY 分组查询搭配使用，实现分组统计。</p>
+                            <div class="code-block">
+                                -- 聚合函数基础使用
+                                SELECT 
+                                    COUNT(*) AS 总人数,
+                                    SUM(score) AS 总分,
+                                    AVG(score) AS 平均分,
+                                    MAX(score) AS 最高分,
+                                    MIN(score) AS 最低分
+                                FROM student;
+
+                                -- 分组查询：GROUP BY + 聚合函数，按指定字段分组统计
+                                SELECT gender, COUNT(*) AS 人数, AVG(score) AS 平均分 
+                                FROM student 
+                                GROUP BY gender;
+
+                                -- 分组过滤：HAVING，过滤分组后的结果（WHERE过滤行，HAVING过滤组）
+                                SELECT class_id, AVG(score) AS 平均分 
+                                FROM student 
+                                GROUP BY class_id 
+                                HAVING AVG(score) >= 85;
+                            </div>
+                            <div class="warning-box">
+                                <p class="font-medium mb-1"><i class="fa fa-exclamation-triangle mr-1"></i> 高频易错点</p>
+                                <p>GROUP BY 分组后，SELECT 后面只能跟 <strong>分组字段</strong> 和 <strong>聚合函数</strong>，不能跟其他无关字段，否则会报错！</p>
+                            </div>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">1.3 多表联查：JOIN 核心用法</h3>
+                            <p>实际开发中，业务数据通常分散在多张表中，需要通过<strong>关联字段</strong>将多张表连接起来查询，这就是多表联查。JOIN 是多表联查的核心，也是SQL进阶的基础，<strong>必会四种联查方式</strong>：</p>
+                            <div class="code-block">
+                                -- 1. INNER JOIN 内连接：只查询两张表中匹配的记录（最常用）
+                                SELECT s.name, s.score, c.class_name 
+                                FROM student s
+                                INNER JOIN class c 
+                                ON s.class_id = c.class_id;
+
+                                -- 2. LEFT JOIN 左连接：查询左表所有记录，右表匹配不到则显示NULL
+                                SELECT s.name, c.class_name 
+                                FROM student s

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设计入门：从需求到架构 - SDE 学习资源</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .export-btn {
+                @apply inline-flex items-center bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-red-200 hover:scale-105 shadow-md;
+            }
+            .code-block {
+                @apply bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm my-4;
+            }
+            .note-box {
+                @apply bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 my-4;
+            }
+            .warning-box {
+                @apply bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500 my-4;
+            }
+            .arch-diagram {
+                @apply w-full bg-white p-4 rounded-lg border border-gray-200 my-4;
+            }
+            .loading-overlay {
+                @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+            }
+            .loading-spinner {
+                @apply w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin;
+            }
+            .audio-controls {
+                @apply bg-blue-50 p-4 rounded-lg flex items-center gap-4 mb-6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 文章主体 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- 主内容区 -->
+            <div class="lg:w-2/3">
+                <article class="bg-white rounded-xl shadow-md overflow-hidden" id="articleContent">
+                    <!-- 封面图 -->
+                    <img src="https://picsum.photos/id/180/1200/600" alt="系统设计入门" class="w-full h-64 md:h-96 object-cover">
+                    
+                    <!-- 文章工具栏 -->
+                    <div class="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-full text-sm">系统架构</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-calendar-o mr-1"></i> 2024-02-10</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> 30分钟阅读</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="exportPdfBtn" class="export-btn">
+                                <i class="fa fa-file-pdf-o mr-1"></i> 导出PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 音频朗读控件 -->
+                    <div class="audio-controls px-6">
+                        <button id="audioToggle" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors">
+                            <i class="fa fa-play"></i>
+                        </button>
+                        <div>
+                            <p class="font-medium">文章朗读</p>
+                            <p class="text-sm text-gray-600">点击播放按钮听取系统设计讲解</p>
+                        </div>
+                        <audio id="articleAudio" preload="none">
+                            <source src="./resource/AUDIO/system-design.MP3" type="audio/mpeg">
+                            您的浏览器不支持音频播放
+                        </audio>
+                    </div>
+                    
+                    <!-- 核心内容 -->
+                    <div class="p-6">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">系统设计入门：从需求到架构</h1>
+                        
+                        <div class="text-gray-700 space-y-4">
+                            <p>系统设计（System Design）是将业务需求转化为可落地的技术架构的过程，是中高级软件开发工程师的核心能力，也是大厂技术面试的必考环节。不同于单纯的编码实现，系统设计需要从<strong>业务场景、性能、可用性、可扩展性、成本</strong>等多个维度综合考量，设计出高可用、高性能、易扩展的系统架构。本文将从系统设计的核心原则、流程步骤、关键组件到实战案例，带你入门系统设计的核心思维。</p>
+                            <p>系统设计没有"标准答案"，只有"最合适的方案"，核心是根据业务规模和需求选择匹配的技术方案，而非盲目追求"高大上"的架构。</p>
+
+                            <!-- 第一部分：系统设计核心原则 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section1">一、系统设计的核心原则</h2>
+                            <p>任何系统设计都应遵循以下核心原则，这些原则是架构设计的底层逻辑，贯穿系统设计的全流程：</p>
+                            <ul class="list-disc pl-6 space-y-3 mb-4">
+                                <li>
+                                    <strong>高可用（High Availability）</strong>：系统7x24小时稳定运行，避免单点故障，常用手段：集群部署、主从复制、异地多活、故障自动转移。
+                                    <div class="mt-2 text-sm text-gray-600">核心指标：可用性百分比（如99.9%表示每年故障时间不超过8.76小时）</div>
+                                </li>
+                                <li>
+                                    <strong>高性能（High Performance）</strong>：系统响应速度快、吞吐量高，常用手段：缓存、异步处理、负载均衡、数据库优化、算法优化。
+                                    <div class="mt-2 text-sm text-gray-600">核心指标：响应时间（RT）、每秒查询数（QPS）、每秒事务数（TPS）</div>
+                                </li>
+                                <li>
+                                    <strong>可扩展性（Scalability）</strong>：系统支持横向/纵向扩展，应对业务增长，常用手段：微服务架构、分布式存储、无状态设计、服务注册发现。
+                                </li>
+                                <li>
+                                    <strong>安全性（Security）</strong>：保护系统和数据安全，常用手段：身份认证、权限控制、数据加密、防SQL注入、防XSS攻击、接口限流。
+                                </li>
+                                <li>
+                                    <strong>可维护性（Maintainability）</strong>：系统易理解、易修改、易部署，常用手段：模块化设计、代码规范、文档完善、监控告警。
+                                </li>
+                                <li>
+                                    <strong>成本可控（Cost-Effective）</strong>：在满足需求的前提下，最小化硬件、人力、运维成本，避免过度设计。
+                                </li>
+                            </ul>
+
+                            <div class="note-box">
+                                <p class="font-medium mb-1"><i class="fa fa-lightbulb-o mr-1"></i> 新手误区</p>
+                                <p>新手常犯的错误：过度设计（用分布式架构做小项目）、忽视非功能需求（只关注功能实现，不考虑性能/可用）、技术选型跟风（盲目使用微服务/云原生）。<strong>好的架构是匹配业务的架构，而非技术的堆砌</strong>。</p>
+                            </div>
+
+                            <!-- 第二部分：系统设计的通用流程 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section2">二、系统设计的通用流程：从需求到落地</h2>
+                            <p>无论设计何种系统（电商、社交、支付、直播），都遵循以下通用流程，确保设计过程系统化、无遗漏：</p>
+                            <ol class="list-decimal pl-6 space-y-4 mb-4">
+                                <li>
+                                    <strong>需求分析与范围界定</strong>
+                                    <p class="mt-2 text-gray-700">明确核心需求、非功能需求、用户规模、数据量、峰值QPS等关键指标，避免"需求模糊导致架构失控"。</p>
+                                    <div class="code-block text-xs">
+# 需求分析示例（短视频系统）
+核心需求：视频上传、视频播放、点赞评论、关注推荐
+非功能需求：可用性99.9%、播放延迟<200ms、支持百万级并发
+规模预估：日活100万、单用户日均播放50个视频、视频存储总量10TB/年
+峰值QPS：播放接口10万QPS、点赞接口5万QPS
+                                    </div>
+                                </li>
+                                <li>
+                                    <strong>高层架构设计</strong>
+                                    <p class="mt-2 text-gray-700">画出系统的整体架构图，明确核心组件和组件间的交互关系，不涉及具体技术选型，聚焦"做什么"而非"怎么做"。</p>
+                                    <div class="arch-diagram">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-full bg-gray-100 p-2 rounded text-center font-medium mb-2">用户层（APP/小程序/网页）</div>
+                                            <div class="w-1/2 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full bg-gray-100 p-2 rounded text-center font-medium mb-2">网关层（API Gateway）</div>
+                                            <div class="w-1/2 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full flex gap-4 mb-2">
+                                                <div class="flex-1 bg-gray-100 p-2 rounded text-center font-medium">业务服务层<br/>(视频/用户/互动)</div>
+                                            </div>
+                                            <div class="w-1/2 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full flex gap-4">
+                                                <div class="flex-1 bg-gray-100 p-2 rounded text-center font-medium">数据层<br/>(MySQL/Redis/OSS)</div>
+                                            </div>
+                                        </div>
+                                        <p class="text-center text-sm text-gray-500 mt-2">短视频系统高层架构示意图</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <strong>核心组件设计</strong>
+                                    <p class="mt-2 text-gray-700">针对每个核心组件，明确职责、技术选型、关键设计点，例如：</p>
+                                    <ul class="list-disc pl-6 mt-2 space-y-1">
+                                        <li>存储组件：选择关系型数据库/NoSQL/对象存储，设计表结构/数据模型</li>
+                                        <li>计算组件：选择同步/异步处理，设计核心算法和业务逻辑</li>
+                                        <li>缓存组件：设计缓存策略（缓存键、过期时间、更新策略）</li>
+                                        <li>通信组件：选择HTTP/RPC/消息队列，设计接口规范</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>关键技术问题解决</strong>
+                                    <p class="mt-2 text-gray-700">针对系统的核心挑战（高并发、大数据、高可用），设计具体解决方案，例如：</p>
+                                    <ul class="list-disc pl-6 mt-2 space-y-1">
+                                        <li>高并发：缓存、限流、负载均衡、异步化</li>
+                                        <li>大数据：分库分表、数据分片、离线计算</li>
+                                        <li>高可用：集群、主从、容灾备份</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>详细设计与落地</strong>
+                                    <p class="mt-2 text-gray-700">输出详细设计文档（接口文档、数据库设计、部署架构），制定开发计划和测试策略，逐步落地实现。</p>
+                                </li>
+                                <li>
+                                    <strong>监控、优化与迭代</strong>
+                                    <p class="mt-2 text-gray-700">上线后通过监控系统（Prometheus/Grafana/ELK）跟踪系统指标，针对性能瓶颈和故障点持续优化，根据业务变化迭代架构。</p>
+                                </li>
+                            </ol>
+
+                            <!-- 第三部分：系统设计核心组件详解 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section3">三、系统设计核心组件：从单机到分布式</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">3.1 架构演进：单机架构 → 分布式架构</h3>
+                            <p>系统架构的演进通常跟随业务规模增长，从简单到复杂，核心是解决"性能瓶颈"和"单点故障"问题：</p>
+                            <div class="arch-diagram">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="border border-gray-200 p-3 rounded">
+                                        <h4 class="font-medium mb-2">1. 单机架构（小型项目）</h4>
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-full bg-gray-100 p-2 rounded text-center">用户</div>
+                                            <div class="w-1/4 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full bg-blue-100 p-2 rounded text-center">单服务器<br/>(应用+数据库)</div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2">特点：简单易维护，成本低；缺点：性能上限低，单点故障</p>
+                                    </div>
+                                    <div class="border border-gray-200 p-3 rounded">
+                                        <h4 class="font-medium mb-2">2. 应用分离架构（中小项目）</h4>
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-full bg-gray-100 p-2 rounded text-center">用户</div>
+                                            <div class="w-1/4 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full bg-blue-100 p-2 rounded text-center">应用服务器</div>
+                                            <div class="w-1/4 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full bg-green-100 p-2 rounded text-center">数据库服务器</div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2">特点：应用与数据分离，可分别扩容；缺点：仍有单点故障</p>
+                                    </div>
+                                    <div class="border border-gray-200 p-3 rounded md:col-span-2">
+                                        <h4 class="font-medium mb-2">3. 分布式架构（中大型项目）</h4>
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-full bg-gray-100 p-2 rounded text-center">用户</div>
+                                            <div class="w-1/4 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full bg-purple-100 p-2 rounded text-center">负载均衡（Nginx/LB）</div>
+                                            <div class="w-1/4 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full flex gap-2">
+                                                <div class="flex-1 bg-blue-100 p-2 rounded text-center">应用服务器1</div>
+                                                <div class="flex-1 bg-blue-100 p-2 rounded text-center">应用服务器2</div>
+                                                <div class="flex-1 bg-blue-100 p-2 rounded text-center">应用服务器N</div>
+                                            </div>
+                                            <div class="w-1/4 h-4 border-l-2 border-dashed border-gray-300"></div>
+                                            <div class="w-full flex gap-2">
+                                                <div class="flex-1 bg-green-100 p-2 rounded text-center">主数据库</div>
+                                                <div class="flex-1 bg-green-100 p-2 rounded text-center">从数据库</div>
+                                                <div class="flex-1 bg-yellow-100 p-2 rounded text-center">Redis缓存集群</div>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2">特点：无单点故障，可水平扩容；缺点：复杂度高，运维成本高</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h3 class="text-lg font-semibold mt-6 mb-2">3.2 核心组件：缓存（Cache）</h3>
+                            <p>缓存是提升系统性能的"第一利器"，通过将高频访问的数据存储在高速存储介质（内存）中，减少对底层数据库的访问，核心解决"读性能瓶颈"问题。</p>
+                            <div class="note-box">
+                                <p class="font-medium mb-1"><i class="fa fa-info-circle mr-1"></i> 缓存核心知识点</p>
+                                <ul class="list-disc pl-6 space-y-1 mt-2">
+                                    <li><strong>常用缓存产品</strong>：Redis（主流）、Memcached、本地缓存（Caffeine/Guava）</li>
+                                    <li><strong>缓存策略</strong>：
+                                        <ul class="list-circle pl-6 mt-1 text-sm">
+                                            <li>缓存更新：Cache Aside（先更库，再删缓存）、Write Through（写缓存同步写库）</li>
+                                            <li>缓存淘汰：LRU（最近最少使用）、LFU（最不经常使用）、TTL（过期时间）</li>
+                                            <li>缓存穿透：布隆过滤器、空值缓存</li>
+                                            <li>缓存击穿：互斥锁、热点数据永不过期</li>
+                                            <li>缓存雪崩：过期时间随机化、集群部署、熔断降级</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>缓存使用场景</strong>：高频读低频写数据（用户信息、商品信息、配置信息）、计数场景（点赞数、阅读数）、限流场景</li>
+                                </ul>
+                            </div>
+
+                            <h3 class="text-lg font-semibold mt-6 mb-2">3.3 核心组件：消息队列（Message Queue）</h3>
+                            <p>消息队列是实现系统异步化、解耦、削峰填谷的核心组件，核心解决"写性能瓶颈"和"系统耦合"问题。</p>
+                            <div class="code-block">
+# 消息队列核心使用场景
+1. 异步处理：用户注册后发送短信/邮件（主流程不等待，提升响应速度）
+2. 系统解耦：订单系统 → 消息队列 → 库存系统/支付系统/物流系统
+3. 削峰填谷：秒杀场景，将峰值请求写入队列，消费端匀速处理
+4. 数据同步：数据库变更 → 消息队列 → 缓存更新/搜索引擎同步
+
+# 常用消息队列产品对比
+- RabbitMQ：轻量级，易部署，适合中小规模场景
+- Kafka：高吞吐，高可用，适合大数据/日志场景
+- RocketMQ：阿里开源，功能全面，适合电商/金融场景
+- Pulsar：新一代MQ，融合Kafka和RabbitMQ优势，云原生
+                            </div>
+
+                            <h3 class="text-lg font-semibold mt-6 mb-2">3.4 核心组件：数据库设计</h3>
+                            <p>数据库是系统的"数据基石"，数据库设计的好坏直接决定系统性能上限，核心原则：</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li><strong>分库分表</strong>：解决单库单表数据量过大问题，水平分表（按用户ID哈希）、垂直分表（按字段冷热分离）、垂直分库（按业务模块）</li>
+                                <li><strong>索引优化</strong>：创建合适的索引（主键索引、唯一索引、联合索引），避免索引失效（like %xxx、函数操作、类型转换）</li>
+                                <li><strong>读写分离</strong>：主库写入，从库读取，提升读性能</li>
+                                <li><strong>存储选型</strong>：关系型数据库（MySQL/Oracle）存储结构化数据，NoSQL（MongoDB/ES）存储非结构化/半结构化数据</li>
+                            </ul>
+
+                            <!-- 第四部分：系统设计实战案例 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section4">四、系统设计实战：短网址系统设计</h2>
+                            <p>以经典的"短网址系统"为例，完整演示系统设计流程，帮助你理解如何将理论落地：</p>
+
+                            <h3 class="text-lg font-semibold mt-4 mb-2">4.1 需求分析</h3>
+                            <ul class="list-disc pl-6 space-y-1 mb-4">
+                                <li>核心需求：长网址转换为短网址，短网址跳转至原长网址</li>
+                                <li>非功能需求：可用性99.9%，跳转延迟<100ms，支持10万QPS</li>
+                                <li>规模预估：日生成100万短网址，每个短网址保存1年</li>
+                            </ul>
+
+                            <h3 class="text-lg font-semibold mt-2 mb-2">4.2 核心设计</h3>
+                            <div class="code-block">
+# 1. 短码生成算法（核心）
+- 方案1：哈希算法（MD5/SHA1）→ 取前6位 → 避免冲突
+- 方案2：自增ID + 62进制转换（0-9a-zA-Z，6位可表示568亿+组合）
+- 推荐方案2：无冲突，易实现，便于扩容
+
+# 2. 存储设计
+- MySQL表结构：
+  CREATE TABLE short_url (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,  # 自增ID
+    short_code VARCHAR(8) UNIQUE NOT NULL, # 短码
+    long_url TEXT NOT NULL,                # 长网址
+    create_time DATETIME DEFAULT NOW(),    # 创建时间
+    expire_time DATETIME,                  # 过期时间
+    click_count INT DEFAULT 0              # 点击数
+  );
+- 索引：short_code 唯一索引（用于跳转查询）
+
+# 3. 架构设计
+- 接入层：Nginx（负载均衡 + 静态资源）
+- 应用层：无状态服务集群（生成短码、处理跳转）
+- 缓存层：Redis（缓存short_code → long_url，过期时间1小时）
+- 存储层：MySQL（主从复制，读写分离）
+
+# 4. 核心流程
+- 生成短网址：长网址 → 应用层生成短码 → 写入MySQL → 返回短网址
+- 短网址跳转：短码 → Redis查询 → 命中则跳转 → 未命中则查MySQL → 更新Redis → 跳转
+                            </div>
+
+                            <div class="warning-box">
+                                <p class="font-medium mb-1"><i class="fa fa-exclamation-triangle mr-1"></i> 关键优化点</p>
+                                <p>1. 跳转逻辑尽量在Nginx层完成（通过Lua脚本读取Redis），减少应用层开销；2. 短码生成避免分布式ID冲突（使用雪花算法/数据库自增）；3. 防滥用：添加验证码/限流，避免恶意生成短网址；4. 数据清理：定期删除过期短网址，避免数据膨胀。</p>
+                            </div>
+
+                            <!-- 第五部分：系统设计学习路径 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4" id="section5">五、系统设计学习路径与资源推荐</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">5.1 新手学习路径（循序渐进）</h3>
+                            <ol class="list-decimal pl-6 space-y-2 mb-4">
+                                <li><strong>基础阶段</strong>：掌握计算机网络（HTTP/TCP/IP）、操作系统（进程/线程/内存）、数据库（SQL/索引/事务）核心知识点</li>
+                                <li><strong>进阶阶段</strong>：学习分布式系统基础（CAP理论、BASE理论、一致性算法）、核心组件（Redis/Kafka/MySQL）深入原理</li>
+                                <li><strong>实战阶段</strong>：分析经典系统设计案例（短网址、秒杀、聊天系统、搜索引擎），动手设计并写设计文档</li>
+                                <li><strong>提升阶段</strong>：阅读开源项目源码（Nginx/Redis/Kafka），参与实际项目的架构设计和优化</li>
+                            </ol>
+
+                            <h3 class="text-lg font-semibold mt-2 mb-2">5.2 推荐学习资源</h3>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li><strong>书籍</strong>：《系统设计面试》（Alex Xu）、《设计数据密集型应用》（经典）、《高性能MySQL》、《Redis设计与实现》</li>
+                                <li><strong>课程</strong>：极客时间《左耳听风》、《系统设计45讲》、Coursera《Cloud Computing Specialization》</li>
+                                <li><strong>网站</strong>：System Design Primer（GitHub开源）、LeetCode 系统设计专题、InfoQ架构文章</li>
+                                <li><strong>实践</strong>：尝试设计并实现小型系统（短网址、简易秒杀、个人博客），部署到云服务器</li>
+                            </ul>
+
+                            <!-- 总结 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">六、总结</h2>
+                            <p>系统设计是一门"工程艺术"，核心不是记住多少组件和算法，而是培养<strong>架构思维</strong>：能够从业务出发，识别核心问题，选择合适的技术方案，在多个维度（性能、可用、成本）之间做权衡。</p>
+                            <p>对于新手而言，不必一开始就追求设计大型分布式系统，先从单机系统的优化做起，理解每个组件的核心作用，逐步积累实战经验。记住：<strong>最好的架构是能解决当前问题，且能适应未来变化的架构</strong>，系统设计没有银弹，只有不断学习、实践、总结，才能形成自己的架构方法论。</p>
+                        </div>
+                        
+                        <!-- 文章底部 -->
+                        <div class="mt-10 pt-6 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4">相关推荐</h3>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="database.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">SQL基础到进阶：数据库查询技巧</a>
+                                <a href="dev-tools.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">开发者必备工具：提升效率的神器</a>
+                                <a href="algorithms.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">数据结构与算法：面试必备知识点</a>
+                            </div>
+                            <div class="mt-8 flex gap-4">
+                                <a href="articles.html" class="custom-btn"><i class="fa fa-arrow-left mr-2"></i> 返回文章列表</a>
+                                <a href="#" class="custom-btn bg-blue-500 text-white hover:bg-blue-600"><i class="fa fa-share mr-2"></i> 分享本文</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="lg:w-1/3">
+                <!-- 目录导航 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-24">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-list text-blue-500"></i> 本文目录</h4>
+                    <nav class="space-y-2 text-sm">
+                        <a href="#section1" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">一、系统设计的核心原则</a>
+                        <a href="#section2" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">二、系统设计的通用流程</a>
+                        <a href="#section3" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">三、系统设计核心组件</a>
+                        <a href="#section4" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">四、系统设计实战：短网址系统</a>
+                        <a href="#section5" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">五、系统设计学习路径</a>
+                    </nav>
+                </div>
+
+                <!-- 热门文章 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-fire text-red-500"></i> 热门文章</h4>
+                    <div class="space-y-4">
+                        <a href="web-dev.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/160/200/200" alt="现代前端开发" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">现代前端开发：从HTML到React</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 1850次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="python-basics.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/0/200/200" alt="Python编程入门" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">Python 编程入门：从零到一的学习路径</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 1520次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 导出加载提示 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text text-white mt-4">正在生成PDF文件...</div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa fa-code text-blue-400"></i> SDE 学习资源</h4>
+                    <p class="text-gray-400">为学生提供高质量的软件开发学习内容，助力技术成长</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">快速链接</h5>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="articles.html" class="text-gray-400 hover:text-white transition-colors">文章</a></li>
+                        <li><a href="resources.html" class="text-gray-400 hover:text-white transition-colors">资源</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition-colors">关于</a></li>
+                        <li><a href="help.html" class="text-gray-400 hover:text-white transition-colors">帮助</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">关注我们</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-600 transition-colors" title="B站">
+                            <i class="fa fa-play-circle"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-red-600 transition-colors" title="抖音">
+                            <i class="fa fa-music"></i>
+                        </a>
+                        <a href="mailto:contact@sde-study.com" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-green-600 transition-colors" title="电子邮件">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                    </div>
+                    <p class="mt-4 text-gray-400">联系我们: contact@sde-study.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                &copy; 2024 SDE 学习资源 | 学生专属学习平台
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+
+        // 音频播放功能
+        const audioToggle = document.getElementById('audioToggle');
+        const articleAudio = document.getElementById('articleAudio');
+        
+        audioToggle.addEventListener('click', function() {
+            if (articleAudio.paused) {
+                articleAudio.play()
+                    .then(() => {
+                        audioToggle.innerHTML = '<i class="fa fa-pause"></i>';
+                    })
+                    .catch(error => {
+                        console.error('音频播放失败:', error);
+                        alert('音频播放失败，请检查文件路径是否正确: ./resource/AUDIO/system-design.MP3');
+                    });
+            } else {
+                articleAudio.pause();
+                audioToggle.innerHTML = '<i class="fa fa-play"></i>';
+            }
+        });
+
+        // PDF导出功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const { jsPDF } = window.jspdf;
+            const exportBtn = document.getElementById('exportPdfBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const articleContent = document.getElementById('articleContent');
+            const articleTitle = document.querySelector('h1').textContent || '系统设计入门';
+            
+            exportBtn.addEventListener('click', async function() {
+                try {
+                    loadingOverlay.classList.remove('hidden');
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 处理中...';
+                    
+                    await generatePDFWithHtml2Canvas();
+                    alert('PDF导出成功！文件已保存到下载目录。');
+                } catch (error) {
+                    console.error('PDF导出失败:', error);
+                    alert('PDF导出失败: ' + error.message);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = '<i class="fa fa-file-pdf-o mr-1"></i> 导出PDF';
+                }
+            });
+            
+            async function generatePDFWithHtml2Canvas() {
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const content = document.querySelector('#articleContent .p-6');
+                const clonedContent = content.cloneNode(true);
+                
+                // 移除不需要导出的元素
+                const unwantedElements = clonedContent.querySelectorAll('a, button, .audio-controls');
+                unwantedElements.forEach(el => el.remove());
+                
+                // 隐藏克隆元素
+                clonedContent.style.position = 'absolute';
+                clonedContent.style.top = '-9999px';
+                clonedContent.style.left = '-9999px';
+                clonedContent.style.width = content.offsetWidth + 'px';
+                document.body.appendChild(clonedContent);
+                
+                try {
+                    const canvas = await html2canvas(clonedContent, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    
+                    pdf.save(`${articleTitle}.pdf`);
+                } finally {
+                    document.body.removeChild(clonedContent);
+                }
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

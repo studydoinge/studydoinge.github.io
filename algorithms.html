@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据结构与算法 - SDE 学习资源</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .export-btn {
+                @apply inline-flex items-center bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-red-200 hover:scale-105 shadow-md;
+            }
+            .code-block {
+                @apply bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm my-4;
+            }
+            .note-box {
+                @apply bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 my-4;
+            }
+            .complexity-box {
+                @apply bg-gray-50 p-4 rounded-lg border border-gray-200 my-4;
+            }
+            .loading-overlay {
+                @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+            }
+            .loading-spinner {
+                @apply w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin;
+            }
+            .audio-controls {
+                @apply bg-blue-50 p-4 rounded-lg flex items-center gap-4 mb-6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-code text-blue-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
+                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+                <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 文章主体 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- 主内容区 -->
+            <div class="lg:w-2/3">
+                <article class="bg-white rounded-xl shadow-md overflow-hidden" id="articleContent">
+                    <!-- 封面图 -->
+                    <img src="https://picsum.photos/id/180/1200/600" alt="数据结构与算法" class="w-full h-64 md:h-96 object-cover">
+                    
+                    <!-- 文章工具栏 -->
+                    <div class="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-full text-sm">算法</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-calendar-o mr-1"></i> 2024-01-20</span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> 20分钟阅读</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="exportPdfBtn" class="export-btn">
+                                <i class="fa fa-file-pdf-o mr-1"></i> 导出PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 音频朗读控件 -->
+                    <div class="audio-controls px-6">
+                        <button id="audioToggle" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors">
+                            <i class="fa fa-play"></i>
+                        </button>
+                        <div>
+                            <p class="font-medium">文章朗读</p>
+                            <p class="text-sm text-gray-600">点击播放按钮听取算法知识点讲解</p>
+                        </div>
+                        <audio id="articleAudio" preload="none">
+                            <source src="./resource/AUDIO/algorithms.MP3" type="audio/mpeg">
+                            您的浏览器不支持音频播放
+                        </audio>
+                    </div>
+                    
+                    <!-- 核心内容 -->
+                    <div class="p-6">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">数据结构与算法：面试必备知识点</h1>
+                        
+                        <div class="text-gray-700 space-y-4">
+                            <p>数据结构是计算机存储、组织数据的方式，算法是解决特定问题的步骤描述。数据结构与算法是软件开发的核心基础，也是大厂面试的重点考察内容。掌握常用数据结构和经典算法，能显著提升代码质量和解题能力。</p>
+                            
+                            <!-- 第一部分：时间/空间复杂度 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">一、算法复杂度分析</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">1.1 时间复杂度</h3>
+                            <p>时间复杂度表示算法执行时间随数据规模增长的变化趋势，常用大O记法表示：</p>
+                            <div class="complexity-box">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-gray-200">
+                                            <th class="text-left py-2">复杂度</th>
+                                            <th class="text-left py-2">名称</th>
+                                            <th class="text-left py-2">示例</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">O(1)</td>
+                                            <td class="py-2">常数阶</td>
+                                            <td class="py-2">访问数组第i个元素</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">O(logn)</td>
+                                            <td class="py-2">对数阶</td>
+                                            <td class="py-2">二分查找</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">O(n)</td>
+                                            <td class="py-2">线性阶</td>
+                                            <td class="py-2">遍历数组</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">O(nlogn)</td>
+                                            <td class="py-2">线性对数阶</td>
+                                            <td class="py-2">归并排序、快速排序</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">O(n²)</td>
+                                            <td class="py-2">平方阶</td>
+                                            <td class="py-2">冒泡排序、选择排序</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">O(2ⁿ)</td>
+                                            <td class="py-2">指数阶</td>
+                                            <td class="py-2">斐波那契递归</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h3 class="text-lg font-semibold mt-4 mb-2">1.2 空间复杂度</h3>
+                            <p>空间复杂度表示算法所需存储空间随数据规模增长的变化趋势：</p>
+                            <ul class="list-disc pl-6 space-y-2 mb-4">
+                                <li>O(1)：常数空间，算法所需空间与数据规模无关</li>
+                                <li>O(n)：线性空间，算法所需空间随数据规模线性增长</li>
+                                <li>O(n²)：平方空间，如二维数组存储数据</li>
+                            </ul>
+                            
+                            <div class="note-box">
+                                <p class="font-medium mb-1"><i class="fa fa-info-circle mr-1"></i> 优化原则</p>
+                                <p>算法优化通常追求「时间换空间」或「空间换时间」，需根据实际场景权衡。面试中优先考虑时间复杂度优化。</p>
+                            </div>
+                            
+                            <!-- 第二部分：基础数据结构 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">二、基础数据结构</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">2.1 数组 (Array)</h3>
+                            <p>连续存储的同类型元素集合，支持随机访问：</p>
+                            <div class="code-block">
+                                # Python 数组（列表）示例
+                                arr = [1, 2, 3, 4, 5]
+                                
+                                # 访问元素 O(1)
+                                print(arr[2]) # 3
+                                
+                                # 尾部添加 O(1)
+                                arr.append(6)
+                                
+                                # 中间插入 O(n)
+                                arr.insert(2, 10)
+                                
+                                # 删除元素 O(n)
+                                del arr[3]
+                            </div>
+                            <p class="mt-2">特点：随机访问快，插入删除慢，适合读多写少的场景。</p>
+                            
+                            <h3 class="text-lg font-semibold mt-4 mb-2">2.2 链表 (Linked List)</h3>
+                            <p>非连续存储的节点序列，每个节点包含数据和指向下一节点的指针：</p>
+                            <div class="code-block">
+                                # 单链表节点定义
+                                class ListNode:
+                                    def __init__(self, val=0, next=None):
+                                        self.val = val
+                                        self.next = next
+                                
+                                # 创建链表 1 -> 2 -> 3
+                                head = ListNode(1)
+                                head.next = ListNode(2)
+                                head.next.next = ListNode(3)
+                                
+                                # 遍历链表 O(n)
+                                current = head
+                                while current:
+                                    print(current.val)
+                                    current = current.next
+                            </div>
+                            <p class="mt-2">类型：单链表、双向链表、循环链表<br>
+                            特点：插入删除快，访问慢，适合写多读少的场景。</p>
+                            
+                            <h3 class="text-lg font-semibold mt-4 mb-2">2.3 栈 (Stack)</h3>
+                            <p>先进后出（LIFO）的线性结构，支持压栈（push）和弹栈（pop）：</p>
+                            <div class="code-block">
+                                # 使用列表实现栈
+                                stack = []
+                                
+                                # 压栈
+                                stack.append(1)
+                                stack.append(2)
+                                stack.append(3)
+                                
+                                # 弹栈 O(1)
+                                print(stack.pop()) # 3
+                                print(stack.pop()) # 2
+                                
+                                # 查看栈顶
+                                print(stack[-1]) # 1
+                            </div>
+                            <p class="mt-2">应用场景：括号匹配、表达式求值、深度优先搜索（DFS）。</p>
+                            
+                            <h3 class="text-lg font-semibold mt-4 mb-2">2.4 队列 (Queue)</h3>
+                            <p>先进先出（FIFO）的线性结构，支持入队（enqueue）和出队（dequeue）：</p>
+                            <div class="code-block">
+                                from collections import deque
+                                
+                                # 创建队列
+                                queue = deque()
+                                
+                                # 入队
+                                queue.append(1)
+                                queue.append(2)
+                                queue.append(3)
+                                
+                                # 出队 O(1)
+                                print(queue.popleft()) # 1
+                                print(queue.popleft()) # 2
+                            </div>
+                            <p class="mt-2">类型：普通队列、双端队列（Deque）、优先级队列<br>
+                            应用场景：广度优先搜索（BFS）、任务排队、消息队列。</p>
+                            
+                            <h3 class="text-lg font-semibold mt-4 mb-2">2.5 哈希表 (Hash Table)</h3>
+                            <p>通过哈希函数将键映射到存储位置，实现O(1)时间复杂度的查找：</p>
+                            <div class="code-block">
+                                # Python 字典（哈希表实现）
+                                hash_map = {"a": 1, "b": 2, "c": 3}
+                                
+                                # 查找 O(1)
+                                print(hash_map["b"]) # 2
+                                
+                                # 添加 O(1)
+                                hash_map["d"] = 4
+                                
+                                # 删除 O(1)
+                                del hash_map["a"]
+                            </div>
+                            <p class="mt-2">哈希冲突解决：链地址法、开放定址法<br>
+                            应用场景：缓存、去重、频率统计。</p>
+                            
+                            <!-- 第三部分：经典排序算法 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">三、经典排序算法</h2>
+                            <div class="complexity-box">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-gray-200">
+                                            <th class="text-left py-2">算法</th>
+                                            <th class="text-left py-2">平均时间复杂度</th>
+                                            <th class="text-left py-2">空间复杂度</th>
+                                            <th class="text-left py-2">稳定性</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">冒泡排序</td>
+                                            <td class="py-2">O(n²)</td>
+                                            <td class="py-2">O(1)</td>
+                                            <td class="py-2">稳定</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">选择排序</td>
+                                            <td class="py-2">O(n²)</td>
+                                            <td class="py-2">O(1)</td>
+                                            <td class="py-2">不稳定</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">插入排序</td>
+                                            <td class="py-2">O(n²)</td>
+                                            <td class="py-2">O(1)</td>
+                                            <td class="py-2">稳定</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">归并排序</td>
+                                            <td class="py-2">O(nlogn)</td>
+                                            <td class="py-2">O(n)</td>
+                                            <td class="py-2">稳定</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">快速排序</td>
+                                            <td class="py-2">O(nlogn)</td>
+                                            <td class="py-2">O(logn)</td>
+                                            <td class="py-2">不稳定</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-2">堆排序</td>
+                                            <td class="py-2">O(nlogn)</td>
+                                            <td class="py-2">O(1)</td>
+                                            <td class="py-2">不稳定</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">计数排序</td>
+                                            <td class="py-2">O(n+k)</td>
+                                            <td class="py-2">O(n+k)</td>
+                                            <td class="py-2">稳定</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h3 class="text-lg font-semibold mt-4 mb-2">3.1 快速排序（重点）</h3>
+                            <div class="code-block">
+                                def quick_sort(arr):
+                                    if len(arr) <= 1:
+                                        return arr
+                                    # 选择基准元素
+                                    pivot = arr[len(arr) // 2]
+                                    # 分治
+                                    left = [x for x in arr if x < pivot]
+                                    middle = [x for x in arr if x == pivot]
+                                    right = [x for x in arr if x > pivot]
+                                    # 递归排序
+                                    return quick_sort(left) + middle + quick_sort(right)
+                                
+                                # 测试
+                                arr = [3, 6, 8, 10, 1, 2, 1]
+                                print(quick_sort(arr)) # [1, 1, 2, 3, 6, 8, 10]
+                            </div>
+                            
+                            <!-- 第四部分：查找算法 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">四、经典查找算法</h2>
+                            <h3 class="text-lg font-semibold mt-4 mb-2">4.1 二分查找</h3>
+                            <p>适用于有序数组，时间复杂度O(logn)：</p>
+                            <div class="code-block">
+                                def binary_search(arr, target):
+                                    left, right = 0, len(arr) - 1
+                                    while left <= right:
+                                        mid = (left + right) // 2
+                                        if arr[mid] == target:
+                                            return mid  # 找到返回索引
+                                        elif arr[mid] < target:
+                                            left = mid + 1
+                                        else:
+                                            right = mid - 1
+                                    return -1  # 未找到返回-1
+                                
+                                # 测试
+                                arr = [1, 3, 5, 7, 9, 11]
+                                print(binary_search(arr, 7)) # 3
+                                print(binary_search(arr, 4)) # -1
+                            </div>
+                            
+                            <!-- 第五部分：面试高频算法题 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">五、面试高频算法题</h2>
+                            <ol class="list-decimal pl-6 space-y-3 mb-4">
+                                <li><strong>数组类</strong>：两数之和、三数之和、数组去重、最长连续序列</li>
+                                <li><strong>链表类</strong>：反转链表、链表中环的检测、合并两个有序链表</li>
+                                <li><strong>栈队列类</strong>：有效的括号、最小栈、用栈实现队列</li>
+                                <li><strong>字符串类</strong>：最长回文子串、字符串匹配、无重复字符的最长子串</li>
+                                <li><strong>树类</strong>：二叉树的遍历、二叉树的最大深度、对称二叉树</li>
+                                <li><strong>动态规划</strong>：斐波那契数列、爬楼梯、最长递增子序列</li>
+                            </ol>
+                            
+                            <div class="note-box">
+                                <p class="font-medium mb-1"><i class="fa fa-lightbulb-o mr-1"></i> 刷题建议</p>
+                                <p>1. 优先刷 LeetCode 热题 100、剑指 Offer<br>
+                                2. 按专题刷题（数组→链表→栈→树→动态规划）<br>
+                                3. 一道题多解法，理解时间/空间复杂度差异<br>
+                                4. 总结解题模板，如二分查找、滑动窗口、DFS/BFS</p>
+                            </div>
+                            
+                            <!-- 第六部分：总结 -->
+                            <h2 class="text-xl font-bold mt-8 mb-4">六、总结</h2>
+                            <p>数据结构与算法的学习是一个长期积累的过程，建议：</p>
+                            <ul class="list-disc pl-6 space-y-2">
+                                <li>理解原理：不仅要会用，还要理解底层实现</li>
+                                <li>手写代码：重要算法需能手写实现</li>
+                                <li>刻意练习：每天刷1-2道算法题，保持手感</li>
+                                <li>总结归纳：同类题目找规律，形成解题思路</li>
+                            </ul>
+                            <p class="mt-2">记住：算法能力不是一蹴而就的，坚持练习才能稳步提升。</p>
+                        </div>
+                        
+                        <!-- 文章底部 -->
+                        <div class="mt-10 pt-6 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4">相关推荐</h3>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="python-basics.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">Python 编程入门</a>
+                                <a href="system-design.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">系统设计入门：从单体到分布式</a>
+                                <a href="dev-tools.html" class="bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-full text-sm">算法刷题工具推荐</a>
+                            </div>
+                            <div class="mt-8 flex gap-4">
+                                <a href="articles.html" class="custom-btn"><i class="fa fa-arrow-left mr-2"></i> 返回文章列表</a>
+                                <a href="#" class="custom-btn bg-blue-500 text-white hover:bg-blue-600"><i class="fa fa-share mr-2"></i> 分享本文</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="lg:w-1/3">
+                <!-- 目录导航 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-24">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-list text-blue-500"></i> 本文目录</h4>
+                    <nav class="space-y-2 text-sm">
+                        <a href="#section1" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">一、算法复杂度分析</a>
+                        <a href="#section2" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">二、基础数据结构</a>
+                        <a href="#section3" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">三、经典排序算法</a>
+                        <a href="#section4" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">四、经典查找算法</a>
+                        <a href="#section5" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">五、面试高频算法题</a>
+                        <a href="#section6" class="block text-gray-700 hover:text-blue-500 hover:pl-2 transition-all">六、总结</a>
+                    </nav>
+                </div>
+
+                <!-- 热门文章 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h4 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa fa-fire text-red-500"></i> 热门文章</h4>
+                    <div class="space-y-4">
+                        <a href="python-basics.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/0/200/200" alt="Python编程入门" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">Python 编程入门：从零到一的学习路径</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 1520次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="database.html" class="block group">
+                            <div class="flex gap-3">
+                                <img src="https://picsum.photos/id/119/200/200" alt="SQL基础到进阶" class="w-20 h-20 rounded object-cover group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="font-medium text-gray-800 group-hover:text-blue-500 transition-colors line-clamp-2">SQL基础到进阶：数据库查询技巧</h5>
+                                    <p class="text-gray-500 text-xs mt-1"><i class="fa fa-eye mr-1"></i> 980次浏览</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 导出加载提示 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在生成PDF文件...</div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa fa-code text-blue-400"></i> SDE 学习资源</h4>
+                    <p class="text-gray-400">为学生提供高质量的软件开发学习内容，助力技术成长</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">快速链接</h5>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="articles.html" class="text-gray-400 hover:text-white transition-colors">文章</a></li>
+                        <li><a href="resources.html" class="text-gray-400 hover:text-white transition-colors">资源</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition-colors">关于</a></li>
+                        <li><a href="help.html" class="text-gray-400 hover:text-white transition-colors">帮助</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">关注我们</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-600 transition-colors" title="B站">
+                            <i class="fa fa-play-circle"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-red-600 transition-colors" title="抖音">
+                            <i class="fa fa-music"></i>
+                        </a>
+                        <a href="mailto:contact@sde-study.com" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-green-600 transition-colors" title="电子邮件">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                    </div>
+                    <p class="mt-4 text-gray-400">联系我们: contact@sde-study.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                &copy; 2024 SDE 学习资源 | 学生专属学习平台
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+
+        // 音频播放功能
+        const audioToggle = document.getElementById('audioToggle');
+        const articleAudio = document.getElementById('articleAudio');
+        
+        audioToggle.addEventListener('click', function() {
+            if (articleAudio.paused) {
+                articleAudio.play()
+                    .then(() => {
+                        audioToggle.innerHTML = '<i class="fa fa-pause"></i>';
+                    })
+                    .catch(error => {
+                        console.error('音频播放失败:', error);
+                        alert('音频播放失败，请检查文件路径是否正确: ./resource/AUDIO/algorithms.MP3');
+                    });
+            } else {
+                articleAudio.pause();
+                audioToggle.innerHTML = '<i class="fa fa-play"></i>';
+            }
+        });
+
+        // PDF导出功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const { jsPDF } = window.jspdf;
+            const exportBtn = document.getElementById('exportPdfBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const articleContent = document.getElementById('articleContent');
+            const articleTitle = document.querySelector('h1').textContent || '数据结构与算法';
+            
+            exportBtn.addEventListener('click', async function() {
+                try {
+                    loadingOverlay.classList.remove('hidden');
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 处理中...';
+                    
+                    await generatePDFWithHtml2Canvas();
+                    alert('PDF导出成功！文件已保存到下载目录。');
+                } catch (error) {
+                    console.error('PDF导出失败:', error);
+                    alert('PDF导出失败: ' + error.message);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = '<i class="fa fa-file-pdf-o mr-1"></i> 导出PDF';
+                }
+            });
+            
+            async function generatePDFWithHtml2Canvas() {
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const content = document.querySelector('#articleContent .p-6');
+                const clonedContent = content.cloneNode(true);
+                
+                // 移除不需要导出的元素
+                const unwantedElements = clonedContent.querySelectorAll('a, button, .audio-controls');
+                unwantedElements.forEach(el => el.remove());
+                
+                // 隐藏克隆元素
+                clonedContent.style.position = 'absolute';
+                clonedContent.style.top = '-9999px';
+                clonedContent.style.left = '-9999px';
+                clonedContent.style.width = content.offsetWidth + 'px';
+                document.body.appendChild(clonedContent);
+                
+                try {
+                    const canvas = await html2canvas(clonedContent, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    while
