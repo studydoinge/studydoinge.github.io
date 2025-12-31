@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDE 学习资源 - 文章（T1）</title>
+    <title>资源中心：海量学习案例库 - SDE 夹生饭</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- PDF导出功能 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -19,6 +16,12 @@
                             base: '#CCFFE5',
                             dark: '#99F2CC',
                             text: '#0A5F38'
+                        },
+                        resource: {
+                            primary: '#3B82F6',
+                            secondary: '#10B981',
+                            accent: '#F59E0B',
+                            dark: '#1E40AF'
                         }
                     }
                 }
@@ -31,45 +34,407 @@
             .custom-btn {
                 @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
             }
-            .pdf-btn {
-                @apply inline-flex items-center bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded-lg transition-all duration-300 hover:bg-red-200;
+            .resource-card {
+                @apply bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100;
+            }
+            .resource-tag {
+                @apply inline-block px-2 py-1 rounded-full text-xs font-medium;
+            }
+            .resource-btn {
+                @apply inline-flex items-center bg-resource-primary text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-resource-dark hover:scale-105 shadow-md;
+            }
+            .free-badge {
+                @apply absolute top-4 right-4 bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full;
+            }
+            .loading-spinner {
+                @apply w-8 h-8 border-4 border-resource-primary border-t-transparent rounded-full animate-spin mx-auto;
+            }
+            .filter-tag {
+                @apply px-3 py-1 rounded-full text-sm cursor-pointer transition-all duration-200;
+            }
+            .filter-tag.active {
+                @apply bg-resource-primary text-white;
+            }
+            .filter-tag.inactive {
+                @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+            }
+            .copy-success {
+                @apply bg-green-500 text-white text-xs px-2 py-1 rounded absolute right-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300;
             }
         }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- 导航栏 -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
         <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
             <div class="flex items-center gap-2 mb-4 md:mb-0">
                 <i class="fa fa-code text-blue-500 text-2xl"></i>
-                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源测试版</h1>
+                <h1 class="text-xl font-bold text-blue-500">SDE 学习资源</h1>
             </div>
             <nav class="flex gap-3 md:gap-6">
                 <a href="index.html" class="custom-btn"><i class="fa fa-home mr-1"></i> 首页</a>
                 <a href="articles.html" class="custom-btn"><i class="fa fa-file-text-o mr-1"></i> 文章</a>
-                <a href="resources.html" class="custom-btn"><i class="fa fa-book mr-1"></i> 资源</a>
+                <a href="resources.html" class="custom-btn bg-custom-dark"><i class="fa fa-book mr-1"></i> 资源</a>
                 <a href="about.html" class="custom-btn"><i class="fa fa-info-circle mr-1"></i> 关于</a>
                 <a href="help.html" class="custom-btn"><i class="fa fa-question-circle mr-1"></i> 帮助</a>
             </nav>
         </div>
     </header>
 
-    <!-- 页面标题 -->
-    <section class="bg-blue-50 py-8">
+    <!-- 页面头部 -->
+    <section class="bg-gradient-to-r from-resource-primary to-resource-dark text-white py-12">
         <div class="container mx-auto px-4">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">本站未开发完成</h2>
-            <p class="text-gray-600 mt-2">请稍安勿躁</p>
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">资源中心：海量学习案例库</h1>
+                <p class="text-lg opacity-90 mb-8">持续更新的编程学习资源合集，覆盖算法、前端、后端、移动端等全领域</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <div class="relative w-full sm:w-96">
+                        <input type="text" id="resourceSearch" placeholder="搜索资源..." 
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 text-gray-800">
+                        <i class="fa fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    </div>
+                    <button id="filterToggle" class="bg-white text-resource-primary px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                        <i class="fa fa-filter mr-2"></i> 筛选资源
+                    </button>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- 文章分类 -->
-   
-                    <p class="mt-4 text-gray-400">联系我们: contact@sde-study.com</p>
+    <!-- 筛选栏 -->
+    <section id="filterSection" class="bg-white py-6 border-b border-gray-200">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-wrap gap-3 mb-6">
+                <span class="font-medium text-gray-700">分类筛选：</span>
+                <div class="filter-tag active" data-category="all">全部资源</div>
+                <div class="filter-tag inactive" data-category="algorithm">算法面试</div>
+                <div class="filter-tag inactive" data-category="web">Web开发</div>
+                <div class="filter-tag inactive" data-category="backend">后端开发</div>
+                <div class="filter-tag inactive" data-category="mobile">移动端</div>
+                <div class="filter-tag inactive" data-category="database">数据库</div>
+                <div class="filter-tag inactive" data-category="system">系统设计</div>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+                <span class="font-medium text-gray-700">难度筛选：</span>
+                <div class="filter-tag active" data-difficulty="all">全部难度</div>
+                <div class="filter-tag inactive" data-difficulty="beginner">入门级</div>
+                <div class="filter-tag inactive" data-difficulty="intermediate">进阶级</div>
+                <div class="filter-tag inactive" data-difficulty="advanced">专家级</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 资源统计 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                <div class="text-3xl font-bold text-resource-primary mb-2" id="totalResources">128</div>
+                <p class="text-gray-600">总资源数</p>
+                <div class="mt-2 text-xs text-green-600"><i class="fa fa-arrow-up mr-1"></i> 本周新增12个</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                <div class="text-3xl font-bold text-resource-secondary mb-2">100%</div>
+                <p class="text-gray-600">免费资源</p>
+                <div class="mt-2 text-xs text-gray-500"><i class="fa fa-check-circle mr-1"></i> 全部免费获取</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                <div class="text-3xl font-bold text-resource-accent mb-2">7</div>
+                <p class="text-gray-600">资源分类</p>
+                <div class="mt-2 text-xs text-gray-500"><i class="fa fa-th-list mr-1"></i> 覆盖全领域</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                <div class="text-3xl font-bold text-purple-600 mb-2">1145141919810亿+</div>
+                <p class="text-gray-600">累计下载量</p>
+                <div class="mt-2 text-xs text-gray-500"><i class="fa fa-download mr-1"></i> 持续增长中</div>
+            </div>
+        </div>
+
+        <!-- 资源列表 -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fa fa-bookmark text-resource-primary mr-2"></i>
+                推荐资源
+                <span class="ml-2 text-sm font-normal text-gray-500">（持续更新，共<span id="resourceCount">128</span>个资源）</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="resourceList">
+                <!-- 资源卡片1：算法面试题精选50道 -->
+                <div class="resource-card" data-category="algorithm" data-difficulty="intermediate">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/0/600/300" alt="算法面试题精选50道" class="w-full h-48 object-cover">
+                        <div class="free-badge">免费</div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <span class="resource-tag bg-blue-100 text-blue-800">算法面试</span>
+                            <span class="resource-tag bg-yellow-100 text-yellow-800 ml-1">进阶级</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold mb-2">算法面试题精选50道</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">整理自各大公司面试的50道经典算法题，包含详细解题思路和代码实现，覆盖数组、链表、树、动态规划等核心考点。</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-download mr-1"></i>
+                                <span>114514k+ 下载</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-calendar-o mr-1"></i>
+                                <span>1919-08-10 更新</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 替换为直接显示资源链接 -->
+                        <div class="relative">
+                            <input type="text" id="resourceLink1" value="https://www.bilibili.com/video/BV1GJ411x7h7" 
+                                   class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg mb-3 text-sm" readonly>
+                            <button class="copy-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-resource-primary" data-target="resourceLink1">
+                                <i class="fa fa-copy"></i>
+                                <span class="copy-success">已复制</span>
+                            </button>
+                        </div>
+                        <button class="resource-btn w-full mt-2" onclick="window.open('https://www.bilibili.com/video/BV1GJ411x7h7', '_blank')">
+                            <i class="fa fa-external-link mr-2"></i> 立即下载
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 资源卡片2：Web开发实战项目源码 -->
+                <div class="resource-card" data-category="web" data-difficulty="beginner">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/4/600/300" alt="Web开发实战项目源码" class="w-full h-48 object-cover">
+                        <div class="free-badge">免费</div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <span class="resource-tag bg-green-100 text-green-800">Web开发</span>
+                            <span class="resource-tag bg-blue-100 text-blue-800 ml-1">入门级</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold mb-2">Web开发实战项目源码</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">包含10个前端实战项目源码，从简单的 Todo 应用到完整的电商网站，涵盖HTML、CSS、JavaScript、React、Vue等技术栈。</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-download mr-1"></i>
+                                <span>1.8k+ 下载</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-calendar-o mr-1"></i>
+                                <span>2038-01-19 更新</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 直接显示资源链接 -->
+                        <div class="relative">
+                            <input type="text" id="resourceLink2" value="https://www.bilibili.com/bangumi/play/ss427?spm_id_from=333.337.0.0" 
+                                   class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg mb-3 text-sm" readonly>
+                            <button class="copy-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-resource-primary" data-target="resourceLink2">
+                                <i class="fa fa-copy"></i>
+                                <span class="copy-success">已复制</span>
+                            </button>
+                        </div>
+                        <button class="resource-btn w-full mt-2" onclick="window.open('https://www.bilibili.com/bangumi/play/ss427?spm_id_from=333.337.0.0', '_blank')">
+                            <i class="fa fa-external-link mr-2"></i> 立即下载
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 资源卡片3：Java后端实战项目 -->
+                <div class="resource-card" data-category="backend" data-difficulty="intermediate">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/180/600/300" alt="Java后端实战项目" class="w-full h-48 object-cover">
+                        <div class="free-badge">免费</div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <span class="resource-tag bg-red-100 text-red-800">后端开发</span>
+                            <span class="resource-tag bg-yellow-100 text-yellow-800 ml-1">进阶级</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold mb-2">Java后端实战项目合集</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">8个完整的Java后端项目，包含Spring Boot、Spring Cloud微服务、分布式系统等，附详细文档和部署教程。</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-download mr-1"></i>
+                                <span>1.5k+ 下载</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-calendar-o mr-1"></i>
+                                <span>2024-01-20 更新</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 直接显示资源链接 -->
+                        <div class="relative">
+                            <input type="text" id="resourceLink3" value="https://www.bilibili.com/bangumi/play/ss427?spm_id_from=333.337.0.0" 
+                                   class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg mb-3 text-sm" readonly>
+                            <button class="copy-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-resource-primary" data-target="resourceLink3">
+                                <i class="fa fa-copy"></i>
+                                <span class="copy-success">已复制</span>
+                            </button>
+                        </div>
+                        <button class="resource-btn w-full mt-2" onclick="window.open('https://www.bilibili.com/bangumi/play/ss427?spm_id_from=333.337.0.0', '_blank')">
+                            <i class="fa fa-external-link mr-2"></i> 立即下载
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 资源卡片4：移动端开发实战 -->
+                <div class="resource-card" data-category="mobile" data-difficulty="intermediate">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/96/600/300" alt="移动端开发实战" class="w-full h-48 object-cover">
+                        <div class="free-badge">免费</div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <span class="resource-tag bg-purple-100 text-purple-800">移动端</span>
+                            <span class="resource-tag bg-yellow-100 text-yellow-800 ml-1">进阶级</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold mb-2">Android & iOS 实战项目</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">6个跨平台移动应用项目，包含Flutter、React Native、原生Android/iOS开发，涵盖电商、社交、工具类应用。</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-download mr-1"></i>
+                                <span>980+ 下载</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-calendar-o mr-1"></i>
+                                <span>2024-02-28 更新</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 直接显示资源链接 -->
+                        <div class="relative">
+                            <input type="text" id="resourceLink4" value="https://www.bilibili.com/bangumi/play/ss425?spm_id_from=333.337.0.0" 
+                                   class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg mb-3 text-sm" readonly>
+                            <button class="copy-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-resource-primary" data-target="resourceLink4">
+                                <i class="fa fa-copy"></i>
+                                <span class="copy-success">已复制</span>
+                            </button>
+                        </div>
+                        <button class="resource-btn w-full mt-2" onclick="window.open('https://www.bilibili.com/bangumi/play/ss425?spm_id_from=333.337.0.0', '_blank')">
+                            <i class="fa fa-external-link mr-2"></i> 立即下载
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 资源卡片5：数据库面试题大全 -->
+                <div class="resource-card" data-category="database" data-difficulty="intermediate">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/119/600/300" alt="数据库面试题大全" class="w-full h-48 object-cover">
+                        <div class="free-badge">免费</div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <span class="resource-tag bg-orange-100 text-orange-800">数据库</span>
+                            <span class="resource-tag bg-yellow-100 text-yellow-800 ml-1">进阶级</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold mb-2">数据库面试题大全</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">整理100道高频数据库面试题，包含MySQL、Redis、MongoDB等，附详细答案和性能优化思路。</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-download mr-1"></i>
+                                <span>1.2k+ 下载</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-calendar-o mr-1"></i>
+                                <span>2024-01-10 更新</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 直接显示资源链接 -->
+                        <div class="relative">
+                            <input type="text" id="resourceLink5" value="https://www.bilibili.com/bangumi/play/ss29325?spm_id_from=333.337.0.0" 
+                                   class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg mb-3 text-sm" readonly>
+                            <button class="copy-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-resource-primary" data-target="resourceLink5">
+                                <i class="fa fa-copy"></i>
+                                <span class="copy-success">已复制</span>
+                            </button>
+                        </div>
+                        <button class="resource-btn w-full mt-2" onclick="window.open('https://www.bilibili.com/bangumi/play/ss29325?spm_id_from=333.337.0.0', '_blank')">
+                            <i class="fa fa-external-link mr-2"></i> 立即下载
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 资源卡片6：系统设计面试指南 -->
+                <div class="resource-card" data-category="system" data-difficulty="advanced">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/160/600/300" alt="系统设计面试指南" class="w-full h-48 object-cover">
+                        <div class="free-badge">免费</div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <span class="resource-tag bg-indigo-100 text-indigo-800">系统设计</span>
+                            <span class="resource-tag bg-red-100 text-red-800 ml-1">专家级</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold mb-2">系统设计面试指南</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">20个经典系统设计案例，包含设计思路、架构图、技术选型、性能优化，覆盖高并发、高可用、分布式等核心考点。</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-download mr-1"></i>
+                                <span>850+ 下载</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa fa-calendar-o mr-1"></i>
+                                <span>2024-02-20 更新</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 直接显示资源链接 -->
+                        <div class="relative">
+                            <input type="text" id="resourceLink6" value="https://www.bilibili.com/video/BV1ct4y1n7t9/" 
+                                   class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg mb-3 text-sm" readonly>
+                            <button class="copy-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-resource-primary" data-target="resourceLink6">
+                                <i class="fa fa-copy"></i>
+                                <span class="copy-success">已复制</span>
+                            </button>
+                        </div>
+                        <button class="resource-btn w-full mt-2" onclick="window.open('https://www.bilibili.com/video/BV1ct4y1n7t9/', '_blank')">
+                            <i class="fa fa-external-link mr-2"></i> 立即下载
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 加载更多 -->
+            <div class="text-center mt-10">
+                <button id="loadMoreBtn" class="bg-white border border-resource-primary text-resource-primary px-6 py-3 rounded-lg font-medium hover:bg-resource-primary/5 transition-colors">
+                    <i class="fa fa-refresh mr-2"></i> 加载更多资源
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa fa-code text-blue-400"></i> SDE 学习资源</h4>
+                    <p class="text-gray-400 mb-4">为学生提供高质量的软件开发学习内容，助力技术成长</p>
+                    <p class="text-gray-400">资源持续更新中，欢迎收藏本站获取最新学习资料</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">资源分类</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">算法面试</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Web开发</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">后端开发</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">移动端开发</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">数据库</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4">使用说明</h5>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><i class="fa fa-info-circle mr-2 text-blue-400"></i> 所有资源均为不B站链接</li>
+                        <li><i class="fa fa-lock mr-2 text-blue-400"></i> 提取码已标注在链接后</li>
+                        <li><i class="fa fa-exclamation-circle mr-2 text-blue-400"></i> 链接失效请联系管理员</li>
+                        <li><i class="fa fa-refresh mr-2 text-blue-400"></i> 资源每周更新，敬请关注</li>
+                    </ul>
                 </div>
             </div>
             <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
-                &copy; 2024 SDE 学习资源 | 学生专属学习平台 测试版不代表最终品质 TEST01
+                &copy; 2024 SDE夹生饭 学习资源 | 学生专属学习平台 | 所有资源仅供学习使用
             </div>
         </div>
     </footer>
@@ -78,48 +443,266 @@
         // 导航栏滚动效果
         window.addEventListener('scroll', () => {
             const header = document.querySelector('header');
-            header.classList.toggle('py-2', window.scrollY > 10);
-            header.classList.toggle('py-4', window.scrollY <= 10);
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
         });
 
-        // PDF导出功能
-        function exportToPDF(articleId) {
-            // 显示加载状态
-            const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 正在导出...';
-            btn.disabled = true;
+        // 筛选栏切换
+        const filterToggle = document.getElementById('filterToggle');
+        const filterSection = document.getElementById('filterSection');
+        
+        filterToggle.addEventListener('click', () => {
+            filterSection.classList.toggle('hidden');
+            if (filterSection.classList.contains('hidden')) {
+                filterToggle.innerHTML = '<i class="fa fa-filter mr-2"></i> 筛选资源';
+            } else {
+                filterToggle.innerHTML = '<i class="fa fa-times mr-2"></i> 关闭筛选';
+            }
+        });
 
-            // 模拟文章内容获取（实际使用时应从对应文章页面获取）
-            const articleTitles = {
-                'python-basics-content': 'Python 编程入门：从零到一的学习路径',
-                'algorithms-content': '数据结构与算法：面试必备知识点',
-                'web-dev-content': '现代前端开发：从HTML到React',
-                'database-content': 'SQL基础到进阶：数据库查询技巧'
-            };
+        // 筛选标签切换
+        const filterTags = document.querySelectorAll('.filter-tag');
+        filterTags.forEach(tag => {
+            tag.addEventListener('click', () => {
+                // 同类型标签重置
+                const categoryTags = tag.hasAttribute('data-category') 
+                    ? document.querySelectorAll('[data-category]')
+                    : document.querySelectorAll('[data-difficulty]');
+                
+                categoryTags.forEach(t => {
+                    t.classList.remove('active');
+                    t.classList.add('inactive');
+                });
+                
+                // 激活当前标签
+                tag.classList.remove('inactive');
+                tag.classList.add('active');
+                
+                // 执行筛选逻辑
+                filterResources();
+            });
+        });
 
+        // 资源筛选逻辑
+        function filterResources() {
+            const activeCategory = document.querySelector('[data-category].active').dataset.category;
+            const activeDifficulty = document.querySelector('[data-difficulty].active').dataset.difficulty;
+            const searchTerm = document.getElementById('resourceSearch').value.toLowerCase();
+            
+            const resourceCards = document.querySelectorAll('.resource-card');
+            
+            resourceCards.forEach(card => {
+                const category = card.dataset.category;
+                const difficulty = card.dataset.difficulty;
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                const categoryMatch = activeCategory === 'all' || category === activeCategory;
+                const difficultyMatch = activeDifficulty === 'all' || difficulty === activeDifficulty;
+                const searchMatch = searchTerm === '' || title.includes(searchTerm) || description.includes(searchTerm);
+                
+                if (categoryMatch && difficultyMatch && searchMatch) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // 更新资源计数
+            const visibleCount = document.querySelectorAll('.resource-card[style*="block"]').length;
+            document.getElementById('resourceCount').textContent = visibleCount;
+        }
+
+        // 搜索功能
+        const resourceSearch = document.getElementById('resourceSearch');
+        resourceSearch.addEventListener('input', filterResources);
+
+        // 复制链接功能
+        const copyButtons = document.querySelectorAll('.copy-btn');
+        copyButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                const input = document.getElementById(targetId);
+                
+                // 选中并复制文本
+                input.select();
+                navigator.clipboard.writeText(input.value).then(() => {
+                    // 显示复制成功提示
+                    const successText = btn.querySelector('.copy-success');
+                    successText.style.opacity = '1';
+                    
+                    // 3秒后隐藏提示
+                    setTimeout(() => {
+                        successText.style.opacity = '0';
+                    }, 2000);
+                }).catch(err => {
+                    alert('复制失败，请手动复制链接');
+                });
+            });
+        });
+
+        // 加载更多资源
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        let isLoading = false;
+        
+        loadMoreBtn.addEventListener('click', () => {
+            if (isLoading) return;
+            
+            isLoading = true;
+            loadMoreBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 加载中...';
+            
+            // 模拟加载更多资源
             setTimeout(() => {
-                // 创建PDF文档
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
+                // 生成新的资源卡片（示例）
+                const resourceList = document.getElementById('resourceList');
+                const newResources = [
+                    {
+                        id: 'python-10',
+                        title: 'Python爬虫实战项目',
+                        desc: '10个Python爬虫实战项目，涵盖静态页面、动态页面、APP数据爬取，附反爬策略和数据存储方案。',
+                        category: 'backend',
+                        difficulty: 'intermediate',
+                        image: 'https://picsum.photos/id/48/600/300',
+                        downloads: '780+',
+                        updateDate: '2024-03-05',
+                        link: 'https://pan.baidu.com/s/1qwertyu77889900?pwd=3333'
+                    },
+                    {
+                        id: 'algorithm-100',
+                        title: 'LeetCode刷题指南100题',
+                        desc: '精选LeetCode 100道高频题，按知识点分类，包含详细解题思路、代码实现和时间/空间复杂度分析。',
+                        category: 'algorithm',
+                        difficulty: 'advanced',
+                        image: 'https://picsum.photos/id/20/600/300',
+                        downloads: '1.1k+',
+                        updateDate: '2024-02-18',
+                        link: 'https://pan.baidu.com/s/1asdfghj44556677?pwd=2222'
+                    },
+                    {
+                        id: 'web-vue',
+                        title: 'Vue3+TS实战商城项目',
+                        desc: '基于Vue3、TypeScript、Pinia、Vue Router的完整电商商城项目，包含前台和后台管理系统。',
+                        category: 'web',
+                        difficulty: 'intermediate',
+                        image: 'https://picsum.photos/id/26/600/300',
+                        downloads: '920+',
+                        updateDate: '2024-03-10',
+                        link: 'https://pan.baidu.com/s/1zxcvbnm88990011?pwd=1111'
+                    }
+                ];
                 
-                // 设置字体
-                doc.setFontSize(16);
-                doc.text(articleTitles[articleId], 20, 20);
+                // 添加新卡片到列表
+                newResources.forEach((res, index) => {
+                    const cardNum = 7 + index;
+                    const card = document.createElement('div');
+                    card.className = 'resource-card';
+                    card.dataset.category = res.category;
+                    card.dataset.difficulty = res.difficulty;
+                    
+                    let categoryTag = '';
+                    let difficultyTag = '';
+                    
+                    switch(res.category) {
+                        case 'algorithm': categoryTag = '<span class="resource-tag bg-blue-100 text-blue-800">算法面试</span>'; break;
+                        case 'web': categoryTag = '<span class="resource-tag bg-green-100 text-green-800">Web开发</span>'; break;
+                        case 'backend': categoryTag = '<span class="resource-tag bg-red-100 text-red-800">后端开发</span>'; break;
+                    }
+                    
+                    switch(res.difficulty) {
+                        case 'beginner': difficultyTag = '<span class="resource-tag bg-blue-100 text-blue-800 ml-1">入门级</span>'; break;
+                        case 'intermediate': difficultyTag = '<span class="resource-tag bg-yellow-100 text-yellow-800 ml-1">进阶级</span>'; break;
+                        case 'advanced': difficultyTag = '<span class="resource-tag bg-red-100 text-red-800 ml-1">专家级</span>'; break;
+                    }
+                    
+                    card.innerHTML = `
+                        <div class="relative">
+                            <img src="${res.image}" alt="${res.title}" class="w-full h-48 object-cover">
+                            <div class="free-badge">免费</div>
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                                ${categoryTag}
+                                ${difficultyTag}
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-xl font-bold mb-2">${res.title}</h3>
+                            <p class="text-gray-600 mb-4 line-clamp-3">${res.desc}</p>
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fa fa-download mr-1"></i>
+                                    <span>${res.downloads} 下载</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fa fa-calendar-o mr-1"></i>
+                                    <span>${res.updateDate} 更新</span>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <input type="text" id="resourceLink${cardNum}" value="${res.link}" 
+                                       class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg mb-3 text-sm" readonly>
+                                <button class="copy-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-resource-primary" data-target="resourceLink${cardNum}">
+                                    <i class="fa fa-copy"></i>
+                                    <span class="copy-success">已复制</span>
+                                </button>
+                            </div>
+                            <button class="resource-btn w-full mt-2" onclick="window.open('${res.link}', '_blank')">
+                                <i class="fa fa-external-link mr-2"></i> 立即下载
+                            </button>
+                        </div>
+                    `;
+                    
+                    resourceList.appendChild(card);
+                    
+                    // 为新复制按钮绑定事件
+                    const newCopyBtn = card.querySelector('.copy-btn');
+                    newCopyBtn.addEventListener('click', () => {
+                        const targetId = newCopyBtn.dataset.target;
+                        const input = document.getElementById(targetId);
+                        
+                        input.select();
+                        navigator.clipboard.writeText(input.value).then(() => {
+                            const successText = newCopyBtn.querySelector('.copy-success');
+                            successText.style.opacity = '1';
+                            setTimeout(() => {
+                                successText.style.opacity = '0';
+                            }, 2000);
+                        }).catch(err => {
+                            alert('复制失败，请手动复制链接');
+                        });
+                    });
+                });
                 
-                doc.setFontSize(12);
-                doc.text('本文是SDE学习资源平台的原创内容，详细介绍了相关技术知识点，适合学生学习参考。', 20, 35);
-                doc.text('完整内容请访问我们的网站：https://sde-study.com', 20, 45);
-                
-                // 保存PDF
-                doc.save(`${articleTitles[articleId]}.pdf`);
+                // 更新总资源数
+                const totalCount = document.querySelectorAll('.resource-card').length;
+                document.getElementById('totalResources').textContent = totalCount;
+                document.getElementById('resourceCount').textContent = totalCount;
                 
                 // 恢复按钮状态
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }, 1500);
-        }
+                loadMoreBtn.innerHTML = '<i class="fa fa-refresh mr-2"></i> 加载更多资源';
+                isLoading = false;
+                
+            }, 2000);
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 默认隐藏筛选栏（移动端）
+            if (window.innerWidth < 768) {
+                filterSection.classList.add('hidden');
+            }
+            
+            // 窗口大小变化时调整
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    filterSection.classList.remove('hidden');
+                    filterToggle.innerHTML = '<i class="fa fa-times mr-2"></i> 关闭筛选';
+                }
+            });
+        });
     </script>
 </body>
 </html>
-    

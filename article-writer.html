@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDE 文章编写器 - 快速创作技术文章</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        custom: {
+                            base: '#CCFFE5',
+                            dark: '#99F2CC',
+                            text: '#0A5F38'
+                        },
+                        primary: '#3B82F6',
+                        secondary: '#64748B',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#06B6D4'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .custom-btn {
+                @apply inline-flex items-center bg-custom-base text-custom-text font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-custom-dark hover:scale-105 shadow-md;
+            }
+            .editor-btn {
+                @apply px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md;
+            }
+            .editor-card {
+                @apply bg-white rounded-xl shadow-md overflow-hidden border border-gray-100;
+            }
+            .sidebar-item {
+                @apply flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors;
+            }
+            .form-input {
+                @apply w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary;
+            }
+            .form-label {
+                @apply block text-sm font-medium text-gray-700 mb-1;
+            }
+            .loading-overlay {
+                @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+            }
+            .loading-spinner {
+                @apply w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin;
+            }
+            .tab-active {
+                @apply border-b-2 border-primary text-primary font-medium;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa fa-pencil-square-o text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">SDE 文章编写器</h1>
+            </div>
+            <nav class="flex gap-3 md:gap-6">
+                <button id="saveDraftBtn" class="editor-btn bg-primary/10 text-primary">
+                    <i class="fa fa-save mr-1"></i> 保存草稿
+                </button>
+                <button id="previewBtn" class="editor-btn bg-success/10 text-success">
+                    <i class="fa fa-eye mr-1"></i> 预览文章
+                </button>
+                <button id="exportBtn" class="editor-btn bg-warning/10 text-warning">
+                    <i class="fa fa-file-pdf-o mr-1"></i> 导出PDF
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- 左侧工具栏 -->
+            <div class="lg:w-1/5">
+                <div class="editor-card p-4 sticky top-24">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">文章模板</h3>
+                    <div class="space-y-2 mb-6">
+                        <div class="sidebar-item border-l-4 border-primary bg-primary/5">
+                            <i class="fa fa-code"></i>
+                            <span>技术教程模板</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <span>避坑指南模板</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <i class="fa fa-book"></i>
+                            <span>基础知识模板</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <i class="fa fa-tools"></i>
+                            <span>工具使用模板</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <i class="fa fa-plus"></i>
+                            <span>自定义模板</span>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">格式工具</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-6">
+                        <button class="editor-btn bg-gray-100 text-gray-700 justify-center flex items-center" onclick="insertMarkdown('h2', '二级标题')">
+                            <i class="fa fa-header mr-1"></i> 标题
+                        </button>
+                        <button class="editor-btn bg-gray-100 text-gray-700 justify-center flex items-center" onclick="insertMarkdown('code', '代码块')">
+                            <i class="fa fa-code mr-1"></i> 代码
+                        </button>
+                        <button class="editor-btn bg-gray-100 text-gray-700 justify-center flex items-center" onclick="insertMarkdown('list', '列表')">
+                            <i class="fa fa-list mr-1"></i> 列表
+                        </button>
+                        <button class="editor-btn bg-gray-100 text-gray-700 justify-center flex items-center" onclick="insertMarkdown('note', '提示框')">
+                            <i class="fa fa-sticky-note mr-1"></i> 提示
+                        </button>
+                        <button class="editor-btn bg-gray-100 text-gray-700 justify-center flex items-center" onclick="insertMarkdown('image', '图片')">
+                            <i class="fa fa-image mr-1"></i> 图片
+                        </button>
+                        <button class="editor-btn bg-gray-100 text-gray-700 justify-center flex items-center" onclick="insertMarkdown('link', '链接')">
+                            <i class="fa fa-link mr-1"></i> 链接
+                        </button>
+                    </div>
+
+                    <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">文章设置</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">文章分类</label>
+                            <select class="form-input text-sm">
+                                <option>前端开发</option>
+                                <option>后端开发</option>
+                                <option>数据库</option>
+                                <option>工具使用</option>
+                                <option>面试技巧</option>
+                                <option>其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">标签</label>
+                            <input type="text" class="form-input text-sm" placeholder="输入标签，用逗号分隔">
+                        </div>
+                        <div>
+                            <label class="form-label">预计阅读时间</label>
+                            <select class="form-input text-sm">
+                                <option>5分钟</option>
+                                <option>10分钟</option>
+                                <option>15分钟</option>
+                                <option>20分钟</option>
+                                <option>25分钟</option>
+                                <option>30分钟以上</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间编辑区 -->
+            <div class="lg:w-2/5">
+                <div class="editor-card mb-6">
+                    <div class="border-b border-gray-200">
+                        <div class="flex">
+                            <button class="tab-active px-6 py-3 text-sm font-medium">编辑模式</button>
+                            <button class="px-6 py-3 text-sm font-medium text-gray-500">Markdown模式</button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <!-- 文章标题 -->
+                        <div class="mb-6">
+                            <label class="form-label text-lg">文章标题</label>
+                            <input type="text" id="articleTitle" class="form-input text-xl font-medium" placeholder="输入吸引人的文章标题..." value="开发避坑指南：使用Git时的那些\"缺德行为\"">
+                        </div>
+
+                        <!-- 基础信息 -->
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="form-label">发布日期</label>
+                                <input type="date" class="form-input text-sm" value="2024-03-05">
+                            </div>
+                            <div>
+                                <label class="form-label">文章标签</label>
+                                <input type="text" class="form-input text-sm" placeholder="Git, 版本控制, 避坑" value="Git, 版本控制, 避坑">
+                            </div>
+                        </div>
+
+                        <!-- 封面图 -->
+                        <div class="mb-6">
+                            <label class="form-label">封面图片</label>
+                            <div class="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
+                                <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-500 mb-2">点击上传封面图片或拖拽文件到此处</p>
+                                <p class="text-xs text-gray-400">支持 JPG、PNG 格式，建议尺寸 1200×600</p>
+                                <input type="file" class="hidden" accept="image/*">
+                            </div>
+                        </div>
+
+                        <!-- 可视化编辑器 -->
+                        <div class="space-y-6">
+                            <!-- 段落1 -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-xs text-gray-500">段落 1</span>
+                                    <div class="flex gap-1">
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-bold"></i></button>
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-italic"></i></button>
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-link"></i></button>
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <textarea class="w-full border-0 focus:ring-0 text-gray-700 min-h-[100px]" placeholder="输入段落内容...">Git作为现代软件开发的标配工具，极大提升了团队协作效率，但错误的使用方式往往会给团队带来灾难性后果。有些Git操作看似方便，实则是"缺德行为"——不仅坑自己，更坑队友。本文盘点了开发者在使用Git时最常见的不良习惯和危险操作，并给出对应的正确做法，帮助你规范Git使用，避免成为团队里的"Git杀手"。</textarea>
+                            </div>
+
+                            <!-- 警告提示框 -->
+                            <div class="border border-red-200 bg-red-50 rounded-lg p-4 hover:border-red-400 transition-colors">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-xs text-red-600">警告提示框</span>
+                                    <div class="flex gap-1">
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-pencil"></i></button>
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <i class="fa fa-exclamation-circle text-red-500 text-xl mt-1"></i>
+                                    <div>
+                                        <p class="font-medium text-red-700 mb-1">特别提醒</p>
+                                        <p class="text-gray-700">以下行为均为真实场景中频繁出现的"坑队友操作"，轻则导致代码冲突、丢失，重则需要花费数小时甚至数天修复，严重影响团队开发进度。</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 二级标题 -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-xs text-gray-500">二级标题</span>
+                                    <div class="flex gap-1">
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-pencil"></i></button>
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <input type="text" class="w-full border-0 focus:ring-0 text-xl font-bold text-gray-800" value="一、提交相关：最容易踩的坑">
+                            </div>
+
+                            <!-- 卡片组件 -->
+                            <div class="border border-red-200 rounded-lg p-4 hover:border-red-400 transition-colors">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-xs text-red-600">警告卡片</span>
+                                    <div class="flex gap-1">
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-pencil"></i></button>
+                                        <button class="text-gray-400 hover:text-primary"><i class="fa fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center">
+                                        <i class="fa fa-ban text-2xl text-red-500"></i>
+                                    </div>
+                                    <input type="text" class="font-bold text-lg border-0 focus:ring-0" value="缺德行为①：直接在主分支（main/master）开发">
+                                </div>
+                                <textarea class="w-full border-0 focus:ring-0 text-gray-700 min-h-[80px] mb-3" placeholder="输入卡片描述...">直接在主分支写代码、提交、推送，不创建feature分支，导致主分支代码混乱，随时可能引入bug，影响整个团队。</textarea>
+                                
+                                <!-- 代码块 -->
+                                <div class="bg-gray-800 text-gray-100 p-4 rounded-lg mb-3">
+                                    <div class="flex justify-between mb-2">
+                                        <span class="text-xs text-gray-400">代码块</span>
+                                        <button class="text-gray-400 hover:text-white"><i class="fa fa-copy"></i></button>
+                                    </div>
+                                    <pre class="text-xs overflow-x-auto"># 错误操作
+git checkout main
+# 直接在main分支写代码
+git add . && git commit -m "add xxx feature"
+git push origin main</pre>
+                                </div>
+                                
+                                <!-- 正确做法 -->
+                                <div class="bg-green-50 p-3 rounded-lg">
+                                    <div class="flex justify-between mb-2">
+                                        <span class="text-xs text-green-700">正确做法</span>
+                                        <button class="text-gray-400 hover:text-green-700"><i class="fa fa-pencil"></i></button>
+                                    </div>
+                                    <textarea class="w-full border-0 focus:ring-0 bg-transparent text-gray-700 min-h-[60px]">所有功能开发、bug修复都在独立分支进行，通过PR/MR合并到主分支：</textarea>
+                                    <div class="bg-gray-800 text-gray-100 p-3 rounded-lg mt-2">
+                                        <pre class="text-xs overflow-x-auto"># 创建功能分支
+git checkout -b feature/user-login
+# 在分支开发完成后
+git push origin feature/user-login
+# 通过PR/MR合并到主分支（需代码评审）</pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 添加内容按钮 -->
+                            <button class="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 hover:border-primary hover:text-primary transition-colors">
+                                <i class="fa fa-plus"></i>
+                                <span>添加内容块</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧预览区 -->
+            <div class="lg:w-2/5">
+                <div class="editor-card h-full">
+                    <div class="border-b border-gray-200">
+                        <div class="flex">
+                            <button class="px-6 py-3 text-sm font-medium text-gray-500">移动端预览</button>
+                            <button class="tab-active px-6 py-3 text-sm font-medium">桌面端预览</button>
+                        </div>
+                    </div>
+                    <div id="previewArea" class="p-6 overflow-auto max-h-[90vh]">
+                        <!-- 预览内容会通过JS动态生成 -->
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                            <!-- 封面图 -->
+                            <img src="https://picsum.photos/id/180/1200/600" alt="Git缺德行为" class="w-full h-48 md:h-64 object-cover">
+                            
+                            <!-- 文章工具栏 -->
+                            <div class="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">Git避坑</span>
+                                    <span class="text-gray-500 text-sm"><i class="fa fa-calendar-o mr-1"></i> 2024-03-05</span>
+                                    <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> 25分钟阅读</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 文章内容 -->
+                            <div class="p-6">
+                                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">开发避坑指南：使用Git时的那些"缺德行为"</h1>
+                                
+                                <div class="text-gray-700 space-y-4">
+                                    <p>Git作为现代软件开发的标配工具，极大提升了团队协作效率，但<code class="bg-gray-100 px-1 py-0.5 rounded">错误的使用方式</code>往往会给团队带来灾难性后果。有些Git操作看似方便，实则是"缺德行为"——不仅坑自己，更坑队友。本文盘点了开发者在使用Git时最常见的不良习惯和危险操作，并给出对应的<code class="bg-green-100 px-1 py-0.5 rounded">正确做法</code>，帮助你规范Git使用，避免成为团队里的"Git杀手"。</p>
+                                    <p>记住：<strong>Git是把双刃剑，用得好提升效率，用不好制造灾难</strong>。</p>
+
+                                    <!-- 警告提示 -->
+                                    <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500 my-4">
+                                        <p class="font-medium mb-1"><i class="fa fa-exclamation-circle mr-1 text-red-500"></i> 特别提醒</p>
+                                        <p>以下行为均为真实场景中频繁出现的"坑队友操作"，轻则导致代码冲突、丢失，重则需要花费数小时甚至数天修复，严重影响团队开发进度。</p>
+                                    </div>
+
+                                    <!-- 第一部分：提交相关的缺德行为 -->
+                                    <h2 class="text-xl font-bold mt-8 mb-4">一、提交相关：最容易踩的坑</h2>
+
+                                    <div class="bg-white rounded-lg border border-red-200 p-5 my-6">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <div class="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center">
+                                                <i class="fa fa-ban text-2xl text-red-500"></i>
+                                            </div>
+                                            <h3 class="font-bold text-lg">缺德行为①：直接在主分支（main/master）开发</h3>
+                                        </div>
+                                        <p class="text-sm text-gray-700 mb-3">
+                                            直接在主分支写代码、提交、推送，不创建feature分支，导致主分支代码混乱，随时可能引入bug，影响整个团队。
+                                        </p>
+                                        <div class="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs mb-3">
+<pre># 错误操作
+git checkout main
+# 直接在main分支写代码
+git add . && git commit -m "add xxx feature"
+git push origin main</pre>
+                                        </div>
+                                        
+                                        <div class="bg-green-50 p-3 rounded-lg mb-3">
+                                            <h4 class="font-medium text-sm text-green-700 mb-1">✅ 正确做法</h4>
+                                            <p class="text-xs text-gray-600">
+                                                所有功能开发、bug修复都在独立分支进行，通过PR/MR合并到主分支：
+                                            </p>
+                                            <div class="bg-gray-800 text-gray-100 p-3 rounded-lg mt-2 overflow-x-auto text-xs">
+<pre># 创建功能分支
+git checkout -b feature/user-login
+# 在分支开发完成后
+git push origin feature/user-login
+# 通过PR/MR合并到主分支（需代码评审）</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 导出加载提示 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto"></div>
+            <div class="loading-text text-white mt-4">正在生成PDF文件...</div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-white shadow-sm py-6 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-600">
+            <p>© 2024 SDE 文章编写器 | 技术文章创作工具</p>
+            <div class="flex justify-center gap-4 mt-3">
+                <a href="#" class="text-gray-500 hover:text-primary"><i class="fa fa-github"></i></a>
+                <a href="#" class="text-gray-500 hover:text-primary"><i class="fa fa-twitter"></i></a>
+                <a href="#" class="text-gray-500 hover:text-primary"><i class="fa fa-envelope"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+
+        // 插入Markdown格式
+        function insertMarkdown(type, placeholder) {
+            // 这里简化处理，实际项目中需要定位到光标位置插入
+            alert(`插入${placeholder}格式\n\n实际项目中会在编辑器中插入对应的Markdown代码`);
+            
+            // 示例：不同类型的Markdown模板
+            const templates = {
+                h2: '## 二级标题\n\n',
+                code: '```javascript\n// 代码内容\n```\n\n',
+                list: '- 列表项1\n- 列表项2\n- 列表项3\n\n',
+                note: '> 提示：这是一个提示框\n\n',
+                image: '![图片描述](https://picsum.photos/800/400)\n\n',
+                link: '[链接文本](https://example.com)\n\n'
+            };
+            
+            console.log(`插入${type}模板:`, templates[type]);
+        }
+
+        // 预览按钮点击事件
+        document.getElementById('previewBtn').addEventListener('click', function() {
+            // 获取标题和内容
+            const title = document.getElementById('articleTitle').value || '未命名文章';
+            
+            // 更新预览区域标题
+            const previewTitle = document.querySelector('#previewArea h1');
+            if (previewTitle) {
+                previewTitle.textContent = title;
+            }
+            
+            // 滚动到预览区域
+            document.querySelector('#previewArea').scrollIntoView({ behavior: 'smooth' });
+            
+            // 显示成功提示
+            this.innerHTML = '<i class="fa fa-check mr-1"></i> 预览已更新';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fa fa-eye mr-1"></i> 预览文章';
+            }, 2000);
+        });
+
+        // 保存草稿按钮点击事件
+        document.getElementById('saveDraftBtn').addEventListener('click', function() {
+            // 模拟保存草稿
+            this.innerHTML = '<i class="fa fa-check mr-1"></i> 草稿已保存';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fa fa-save mr-1"></i> 保存草稿';
+            }, 2000);
+            
+            // 实际项目中这里会将内容保存到本地存储或服务器
+            const articleData = {
+                title: document.getElementById('articleTitle').value,
+                content: '编辑器内容...',
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem('draft_article', JSON.stringify(articleData));
+        });
+
+        // 导出PDF按钮点击事件
+        document.getElementById('exportBtn').addEventListener('click', async function() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const previewArea = document.getElementById('previewArea');
+            
+            try {
+                loadingOverlay.classList.remove('hidden');
+                this.disabled = true;
+                this.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 导出中...';
+                
+                // 模拟PDF导出
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // 实际PDF导出逻辑
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                // 使用html2canvas将预览区域转换为图片
+                html2canvas(previewArea).then(canvas => {
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const imgWidth = 210;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                    pdf.save(`${document.getElementById('articleTitle').value || '未命名文章'}.pdf`);
+                    
+                    // 完成导出
+                    this.innerHTML = '<i class="fa fa-check mr-1"></i> 导出成功';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fa fa-file-pdf-o mr-1"></i> 导出PDF';
+                        this.disabled = false;
+                    }, 2000);
+                });
+                
+            } catch (error) {
+                console.error('导出失败:', error);
+                this.innerHTML = '<i class="fa fa-times mr-1"></i> 导出失败';
+                this.disabled = false;
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+
+        // 页面加载时恢复草稿
+        window.addEventListener('DOMContentLoaded', function() {
+            const draft = localStorage.getItem('draft_article');
+            if (draft) {
+                const articleData = JSON.parse(draft);
+                if (articleData.title) {
+                    document.getElementById('articleTitle').value = articleData.title;
+                }
+                
+                // 显示恢复提示
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-20 right-4 bg-success text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                notification.innerHTML = '<i class="fa fa-info-circle mr-1"></i> 已恢复上次保存的草稿';
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transition = 'opacity 0.5s';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 500);
+                }, 3000);
+            }
+        });
+
+        // 标签切换功能
+        document.querySelectorAll('.tab-active').forEach(tab => {
+            tab.parentElement.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 移除所有激活状态
+                    btn.parentElement.querySelectorAll('button').forEach(b => {
+                        b.classList.remove('tab-active');
+                    });
+                    // 添加当前激活状态
+                    this.classList.add('tab-active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
